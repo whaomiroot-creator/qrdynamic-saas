@@ -152,6 +152,22 @@
                     </div>
                 </div>
                 <div>
+                    <label class="block text-sm font-medium mb-2">Limite de Cliques (opcional)</label>
+                    <input 
+                        type="number" 
+                        id="edit-click-limit" 
+                        min="1"
+                        placeholder="Ex: 100, 500, 1000"
+                        class="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-slate-900 border border-slate-600 rounded-lg focus:ring-2 focus:ring-cyan-500 outline-none text-white text-sm sm:text-base"
+                    >
+                    <div class="flex flex-wrap gap-2 mt-2">
+                        <button type="button" onclick="setEditClickLimit(50)" class="text-xs bg-slate-700 hover:bg-slate-600 px-2.5 sm:px-3 py-1 rounded">50</button>
+                        <button type="button" onclick="setEditClickLimit(100)" class="text-xs bg-slate-700 hover:bg-slate-600 px-2.5 sm:px-3 py-1 rounded">100</button>
+                        <button type="button" onclick="setEditClickLimit(500)" class="text-xs bg-slate-700 hover:bg-slate-600 px-2.5 sm:px-3 py-1 rounded">500</button>
+                        <button type="button" onclick="clearEditClickLimit()" class="text-xs bg-red-600 hover:bg-red-700 px-2.5 sm:px-3 py-1 rounded">Ilimitado</button>
+                    </div>
+                </div>
+                <div>
                     <label class="block text-sm font-medium mb-2">Senha de Proteção (opcional)</label>
                     <input 
                         type="password" 
@@ -246,6 +262,30 @@
             return '';
         }
 
+        // NOVO: Badge de limite de cliques
+        function getClickLimitBadge(clicks, clickLimit) {
+            if (!clickLimit) {
+                return '<span class="px-2 py-1 bg-slate-600/20 text-slate-400 rounded text-xs font-medium whitespace-nowrap">∞ Ilimitado</span>';
+            }
+
+            const percentage = (clicks / clickLimit) * 100;
+            const remaining = clickLimit - clicks;
+
+            if (clicks >= clickLimit) {
+                return '<span class="px-2 py-1 bg-red-600/20 text-red-400 rounded text-xs font-medium whitespace-nowrap">🚫 Limite atingido</span>';
+            }
+
+            if (percentage >= 90) {
+                return `<span class="px-2 py-1 bg-orange-600/20 text-orange-400 rounded text-xs font-medium whitespace-nowrap">⚠️ ${remaining}/${clickLimit}</span>`;
+            }
+
+            if (percentage >= 70) {
+                return `<span class="px-2 py-1 bg-yellow-600/20 text-yellow-400 rounded text-xs font-medium whitespace-nowrap">📊 ${clicks}/${clickLimit}</span>`;
+            }
+
+            return `<span class="px-2 py-1 bg-cyan-600/20 text-cyan-400 rounded text-xs font-medium whitespace-nowrap">🔢 ${clicks}/${clickLimit}</span>`;
+        }
+
         function formatExpiry(expiresAt) {
             if (!expiresAt) return '';
             
@@ -282,6 +322,7 @@
                 container.innerHTML = data.map(link => {
                     const expiryBadge = getExpiryBadge(link.expires_at);
                     const passwordBadge = getPasswordBadge(link.password);
+                    const clickLimitBadge = getClickLimitBadge(link.clicks || 0, link.click_limit);
                     const expiryText = link.expires_at ? `⏰ Expira: ${formatExpiry(link.expires_at)}` : '';
                     
                     return `
@@ -291,6 +332,7 @@
                                 <div class="flex items-center gap-2 sm:gap-3 mb-2 flex-wrap">
                                     <h3 class="text-lg sm:text-xl font-bold break-words">${link.link_name}</h3>
                                     ${expiryBadge}
+                                    ${clickLimitBadge}
                                     ${passwordBadge}
                                 </div>
                                 <p class="text-xs sm:text-sm text-gray-400 mb-2 break-all">${link.destination_url}</p>
@@ -330,7 +372,7 @@
                                     🖨️ Print
                                 </button>
                                 <button 
-                                    onclick="openEditModal('${link.slug}', \`${link.link_name}\`, \`${link.destination_url}\`, '${link.expires_at || ''}')" 
+                                    onclick="openEditModal('${link.slug}', \`${link.link_name}\`, \`${link.destination_url}\`, '${link.expires_at || ''}', ${link.click_limit || 'null'})" 
                                     class="bg-yellow-600 hover:bg-yellow-700 px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors flex items-center justify-center gap-1"
                                     title="Editar"
                                 >
@@ -452,11 +494,20 @@
             document.getElementById('edit-expires').value = '';
         }
 
-        function openEditModal(slug, name, url, expiresAt) {
+        function setEditClickLimit(limit) {
+            document.getElementById('edit-click-limit').value = limit;
+        }
+
+        function clearEditClickLimit() {
+            document.getElementById('edit-click-limit').value = '';
+        }
+
+        function openEditModal(slug, name, url, expiresAt, clickLimit) {
             currentEditSlug = slug;
             document.getElementById('edit-name').value = name;
             document.getElementById('edit-url').value = url;
             document.getElementById('edit-expires').value = expiresAt ? formatDateTimeLocal(expiresAt) : '';
+            document.getElementById('edit-click-limit').value = clickLimit || '';
             document.getElementById('edit-password').value = '';
             document.getElementById('edit-modal').classList.remove('hidden');
         }
@@ -472,6 +523,8 @@
                 const expiresInput = document.getElementById('edit-expires').value;
                 const expiresAt = expiresInput ? new Date(expiresInput).toISOString() : null;
                 const password = document.getElementById('edit-password').value.trim() || null;
+                const clickLimitInput = document.getElementById('edit-click-limit').value;
+                const clickLimit = clickLimitInput ? parseInt(clickLimitInput) : null;
 
                 const { error } = await supabase
                     .from('qr_links')
@@ -479,7 +532,8 @@
                         link_name: document.getElementById('edit-name').value, 
                         destination_url: document.getElementById('edit-url').value,
                         expires_at: expiresAt,
-                        password: password
+                        password: password,
+                        click_limit: clickLimit
                     })
                     .eq('slug', currentEditSlug);
 
