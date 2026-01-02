@@ -133,6 +133,16 @@
                         <button type="button" onclick="clearEditExpiry()" class="text-xs bg-red-600 hover:bg-red-700 px-3 py-1 rounded">Limpar</button>
                     </div>
                 </div>
+                <div>
+                    <label class="block text-sm font-medium mb-2">Senha de Proteção (opcional)</label>
+                    <input 
+                        type="password" 
+                        id="edit-password" 
+                        placeholder="Deixe vazio para remover senha"
+                        class="w-full px-4 py-3 bg-slate-900 border border-slate-600 rounded-lg focus:ring-2 focus:ring-purple-500 outline-none text-white"
+                    >
+                    <p class="text-xs text-gray-500 mt-2">Digite nova senha ou deixe vazio para manter/remover</p>
+                </div>
                 <div class="flex gap-3">
                     <button 
                         type="submit" 
@@ -211,6 +221,13 @@
             return `<span class="px-2 py-1 bg-blue-600/20 text-blue-400 rounded text-xs font-medium">⏰ ${diffDays} dias</span>`;
         }
 
+        function getPasswordBadge(hasPassword) {
+            if (hasPassword) {
+                return '<span class="px-2 py-1 bg-purple-600/20 text-purple-400 rounded text-xs font-medium">🔒 Protegido</span>';
+            }
+            return '';
+        }
+
         function formatExpiry(expiresAt) {
             if (!expiresAt) return '';
             
@@ -246,15 +263,17 @@
                 emptyState.classList.add('hidden');
                 container.innerHTML = data.map(link => {
                     const expiryBadge = getExpiryBadge(link.expires_at);
+                    const passwordBadge = getPasswordBadge(link.password);
                     const expiryText = link.expires_at ? `⏰ Expira: ${formatExpiry(link.expires_at)}` : '';
                     
                     return `
                     <div class="bg-slate-800/50 rounded-xl p-6 border border-slate-700 hover:border-slate-600 transition-colors">
                         <div class="flex flex-col gap-4">
                             <div class="flex-1">
-                                <div class="flex items-center gap-3 mb-2">
+                                <div class="flex items-center gap-3 mb-2 flex-wrap">
                                     <h3 class="text-xl font-bold">${link.link_name}</h3>
                                     ${expiryBadge}
+                                    ${passwordBadge}
                                 </div>
                                 <p class="text-sm text-gray-400 mb-2 break-all">${link.destination_url}</p>
                                 <div class="flex flex-wrap gap-4 text-sm text-gray-500">
@@ -420,6 +439,7 @@
             document.getElementById('edit-name').value = name;
             document.getElementById('edit-url').value = url;
             document.getElementById('edit-expires').value = expiresAt ? formatDateTimeLocal(expiresAt) : '';
+            document.getElementById('edit-password').value = '';
             document.getElementById('edit-modal').classList.remove('hidden');
         }
 
@@ -433,13 +453,15 @@
             try {
                 const expiresInput = document.getElementById('edit-expires').value;
                 const expiresAt = expiresInput ? new Date(expiresInput).toISOString() : null;
+                const password = document.getElementById('edit-password').value.trim() || null;
 
                 const { error } = await supabase
                     .from('qr_links')
                     .update({ 
                         link_name: document.getElementById('edit-name').value, 
                         destination_url: document.getElementById('edit-url').value,
-                        expires_at: expiresAt
+                        expires_at: expiresAt,
+                        password: password
                     })
                     .eq('slug', currentEditSlug);
 
