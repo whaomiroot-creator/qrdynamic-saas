@@ -30,7 +30,7 @@
                     <span class="text-sm text-gray-400">Olá,</span>
                     <span class="font-semibold" id="user-name-header">Usuário</span>
                 </div>
-                <a href="index.html" class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg transition-colors text-sm font-medium">
+                <a href="create.html" class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg transition-colors text-sm font-medium">
                     + Criar Novo
                 </a>
                 <button 
@@ -62,7 +62,7 @@
                 <div class="text-6xl mb-4">📭</div>
                 <h2 class="text-2xl font-bold mb-2">Nenhum QR Code ainda</h2>
                 <p class="text-gray-400 mb-6">Crie seu primeiro QR Code dinâmico!</p>
-                <a href="index.html" class="inline-block bg-blue-600 hover:bg-blue-700 px-6 py-3 rounded-lg font-semibold transition-colors">
+                <a href="create.html" class="inline-block bg-blue-600 hover:bg-blue-700 px-6 py-3 rounded-lg font-semibold transition-colors">
                     Criar QR Code
                 </a>
             </div>
@@ -124,7 +124,7 @@
         // Verificar se está logado com Supabase Auth
         supabase.auth.getSession().then(({ data: { session } }) => {
             if (!session) {
-                window.location.href = 'auth.html';
+                window.location.href = 'index.html';
             } else {
                 currentUserEmail = session.user.email;
                 currentUserName = session.user.user_metadata?.full_name || session.user.email.split('@')[0];
@@ -143,7 +143,7 @@
             if (error) {
                 alert('Erro ao sair: ' + error.message);
             } else {
-                window.location.href = 'auth.html';
+                window.location.href = 'index.html';
             }
         }
 
