@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Redirecionando...</title>
+    <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.3/dist/umd/supabase.min.js"></script>
     <style>
         body {
@@ -32,6 +33,22 @@
         @keyframes spin {
             to { transform: rotate(360deg); }
         }
+        .error-box {
+            max-width: 500px;
+            padding: 2rem;
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            border-radius: 1rem;
+            text-align: center;
+        }
+        .expired-box {
+            max-width: 500px;
+            padding: 2rem;
+            background: rgba(251, 146, 60, 0.1);
+            border: 1px solid rgba(251, 146, 60, 0.3);
+            border-radius: 1rem;
+            text-align: center;
+        }
     </style>
 </head>
 <body>
@@ -51,7 +68,7 @@
             const slug = urlParams.get('id');
 
             if (!slug) {
-                document.body.innerHTML = '<div class="loader"><p style="color: #ef4444;">❌ Link inválido</p></div>';
+                showError('Link inválido', 'Este QR Code não existe ou foi removido.');
                 return;
             }
 
@@ -59,13 +76,24 @@
                 // Buscar destino
                 const { data: link, error } = await supabase
                     .from('qr_links')
-                    .select('destination_url, clicks')
+                    .select('destination_url, clicks, expires_at')
                     .eq('slug', slug)
                     .single();
 
                 if (error || !link) {
-                    document.body.innerHTML = '<div class="loader"><p style="color: #ef4444;">❌ Link não encontrado</p></div>';
+                    showError('Link não encontrado', 'Este QR Code não existe ou foi removido.');
                     return;
+                }
+
+                // Verificar expiração [web:113]
+                if (link.expires_at) {
+                    const now = new Date();
+                    const expiryDate = new Date(link.expires_at);
+                    
+                    if (now > expiryDate) {
+                        showExpired(expiryDate);
+                        return;
+                    }
                 }
 
                 // Registrar clique detalhado
@@ -87,8 +115,31 @@
 
             } catch (error) {
                 console.error('Erro:', error);
-                document.body.innerHTML = '<div class="loader"><p style="color: #ef4444;">❌ Erro ao redirecionar</p></div>';
+                showError('Erro ao redirecionar', 'Tente novamente mais tarde.');
             }
+        }
+
+        function showError(title, message) {
+            document.body.innerHTML = `
+                <div class="error-box">
+                    <div class="text-6xl mb-4">❌</div>
+                    <h1 class="text-2xl font-bold mb-2">${title}</h1>
+                    <p class="text-gray-300">${message}</p>
+                </div>
+            `;
+        }
+
+        function showExpired(expiryDate) {
+            const formatted = expiryDate.toLocaleString('pt-BR');
+            document.body.innerHTML = `
+                <div class="expired-box">
+                    <div class="text-6xl mb-4">⏰</div>
+                    <h1 class="text-2xl font-bold mb-2">QR Code Expirado</h1>
+                    <p class="text-gray-300 mb-4">Este link expirou em:</p>
+                    <p class="text-xl font-semibold text-orange-400">${formatted}</p>
+                    <p class="text-sm text-gray-400 mt-4">Entre em contato com o criador do QR Code para obter um novo link.</p>
+                </div>
+            `;
         }
 
         redirect();
