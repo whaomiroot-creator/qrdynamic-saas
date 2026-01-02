@@ -46,53 +46,84 @@
             border: 2px solid #475569;
             border-radius: 8px;
         }
+
+        /* RESPONSIVO MOBILE */
+        @media (max-width: 768px) {
+            .card-hover {
+                padding: 1.25rem !important;
+            }
+            
+            h1 {
+                font-size: 2rem !important;
+            }
+            
+            h2 {
+                font-size: 1.5rem !important;
+            }
+            
+            .grid-cols-2 {
+                grid-template-columns: 1fr;
+            }
+            
+            #preview-container {
+                min-height: 250px !important;
+                padding: 1.5rem !important;
+            }
+        }
+
+        @media (max-width: 640px) {
+            .color-picker {
+                width: 50px;
+                height: 35px;
+            }
+        }
     </style>
 </head>
 <body class="min-h-screen text-gray-100">
     
-    <header class="container mx-auto px-4 py-6 no-print">
-        <nav class="flex justify-between items-center">
-            <div class="flex items-center space-x-2">
-                <svg class="w-8 h-8 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <header class="container mx-auto px-4 py-4 sm:py-6 no-print">
+        <nav class="flex flex-wrap justify-between items-center gap-3">
+            <a href="index.html" class="flex items-center space-x-2 hover:opacity-80 transition-opacity">
+                <svg class="w-6 h-6 sm:w-8 sm:h-8 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"></path>
                 </svg>
-                <span class="text-xl font-bold">QRDynamic</span>
-            </div>
-            <div class="flex items-center gap-3">
-                <span class="text-sm text-gray-400 hidden md:block">Olá, <span id="user-name-header" class="font-semibold text-white"></span></span>
-                <a href="admin.html" class="bg-slate-700 hover:bg-slate-600 px-4 py-2 rounded-lg transition-colors text-sm font-medium">
-                    📂 Meus QR Codes
+                <span class="text-lg sm:text-xl font-bold">QRDynamic</span>
+            </a>
+            <div class="flex items-center gap-2 sm:gap-3">
+                <span class="text-xs sm:text-sm text-gray-400 hidden md:block">Olá, <span id="user-name-header" class="font-semibold text-white"></span></span>
+                <a href="admin.html" class="bg-slate-700 hover:bg-slate-600 px-3 py-2 sm:px-4 rounded-lg transition-colors text-xs sm:text-sm font-medium">
+                    📂 <span class="hidden sm:inline">Meus QR Codes</span><span class="sm:hidden">Meus QR</span>
                 </a>
                 <button 
                     onclick="logout()" 
-                    class="bg-red-600 hover:bg-red-700 px-4 py-2 rounded-lg transition-colors text-sm font-medium"
+                    class="bg-red-600 hover:bg-red-700 px-3 py-2 sm:px-4 rounded-lg transition-colors text-xs sm:text-sm font-medium"
                 >
-                    🚪 Sair
+                    🚪 <span class="hidden sm:inline">Sair</span>
                 </button>
             </div>
         </nav>
     </header>
 
-    <main class="container mx-auto px-4 py-12">
-        <div class="text-center mb-12 no-print">
-            <h1 class="text-4xl md:text-6xl font-bold mb-4">
+    <main class="container mx-auto px-4 py-6 sm:py-12">
+        <div class="text-center mb-8 sm:mb-12 no-print">
+            <h1 class="text-3xl sm:text-4xl md:text-6xl font-bold mb-3 sm:mb-4">
                 QR Codes <span class="gradient-text">Dinâmicos</span>
             </h1>
-            <p class="text-xl text-gray-400 max-w-2xl mx-auto">
+            <p class="text-base sm:text-xl text-gray-400 max-w-2xl mx-auto px-4">
                 Crie QR Codes personalizados com suas cores e logo!
             </p>
         </div>
 
         <div class="max-w-6xl mx-auto">
-            <div class="grid md:grid-cols-2 gap-8">
+            <div class="grid md:grid-cols-2 gap-6 sm:gap-8">
                 
                 <!-- Formulário -->
-                <div class="bg-slate-800/50 backdrop-blur-lg rounded-2xl shadow-2xl p-8 card-hover border border-slate-700">
+                <div class="bg-slate-800/50 backdrop-blur-lg rounded-2xl shadow-2xl p-6 sm:p-8 card-hover border border-slate-700">
                     
                     <div id="form-section">
-                        <h2 class="text-2xl font-bold mb-6">Criar Novo QR Code</h2>
+                        <h2 class="text-xl sm:text-2xl font-bold mb-4 sm:mb-6">Criar Novo QR Code</h2>
                         
-                        <form id="qr-form" class="space-y-6">
+                        <form id="qr-form" class="space-y-4 sm:space-y-6">
                             <div>
                                 <label class="block text-sm font-medium mb-2">URL de Destino</label>
                                 <input 
@@ -101,7 +132,7 @@
                                     placeholder="https://seusite.com.br" 
                                     required
                                     oninput="updatePreview()"
-                                    class="w-full px-4 py-3 bg-slate-900 border border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-white"
+                                    class="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-slate-900 border border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-white text-sm sm:text-base"
                                 >
                             </div>
 
@@ -111,7 +142,7 @@
                                     type="text" 
                                     id="link-name" 
                                     placeholder="Ex: Instagram, WhatsApp" 
-                                    class="w-full px-4 py-3 bg-slate-900 border border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-white"
+                                    class="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-slate-900 border border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-white text-sm sm:text-base"
                                 >
                             </div>
 
@@ -126,18 +157,18 @@
                                 <input 
                                     type="datetime-local" 
                                     id="expires-at" 
-                                    class="w-full px-4 py-3 bg-slate-900 border border-slate-600 rounded-lg focus:ring-2 focus:ring-orange-500 outline-none text-white"
+                                    class="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-slate-900 border border-slate-600 rounded-lg focus:ring-2 focus:ring-orange-500 outline-none text-white text-sm sm:text-base"
                                 >
                                 <p class="text-xs text-gray-500 mt-2">Deixe vazio para QR Code permanente</p>
-                                <div class="flex gap-2 mt-3">
-                                    <button type="button" onclick="setExpiry(7)" class="text-xs bg-slate-700 hover:bg-slate-600 px-3 py-1 rounded">+ 7 dias</button>
-                                    <button type="button" onclick="setExpiry(30)" class="text-xs bg-slate-700 hover:bg-slate-600 px-3 py-1 rounded">+ 30 dias</button>
-                                    <button type="button" onclick="setExpiry(90)" class="text-xs bg-slate-700 hover:bg-slate-600 px-3 py-1 rounded">+ 90 dias</button>
-                                    <button type="button" onclick="clearExpiry()" class="text-xs bg-red-600 hover:bg-red-700 px-3 py-1 rounded">Limpar</button>
+                                <div class="flex flex-wrap gap-2 mt-3">
+                                    <button type="button" onclick="setExpiry(7)" class="text-xs bg-slate-700 hover:bg-slate-600 px-2.5 sm:px-3 py-1 rounded">+ 7 dias</button>
+                                    <button type="button" onclick="setExpiry(30)" class="text-xs bg-slate-700 hover:bg-slate-600 px-2.5 sm:px-3 py-1 rounded">+ 30 dias</button>
+                                    <button type="button" onclick="setExpiry(90)" class="text-xs bg-slate-700 hover:bg-slate-600 px-2.5 sm:px-3 py-1 rounded">+ 90 dias</button>
+                                    <button type="button" onclick="clearExpiry()" class="text-xs bg-red-600 hover:bg-red-700 px-2.5 sm:px-3 py-1 rounded">Limpar</button>
                                 </div>
                             </div>
 
-                            <!-- NOVO: Proteção por Senha -->
+                            <!-- Proteção por Senha -->
                             <div>
                                 <label class="block text-sm font-medium mb-2 flex items-center gap-2">
                                     <svg class="w-4 h-4 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -149,19 +180,19 @@
                                     type="password" 
                                     id="qr-password" 
                                     placeholder="Digite uma senha para proteger o link"
-                                    class="w-full px-4 py-3 bg-slate-900 border border-slate-600 rounded-lg focus:ring-2 focus:ring-purple-500 outline-none text-white"
+                                    class="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-slate-900 border border-slate-600 rounded-lg focus:ring-2 focus:ring-purple-500 outline-none text-white text-sm sm:text-base"
                                 >
                                 <p class="text-xs text-gray-500 mt-2">Deixe vazio para QR Code sem proteção</p>
                             </div>
 
                             <!-- Customização de Cores -->
-                            <div class="border-t border-slate-700 pt-6">
-                                <h3 class="text-lg font-semibold mb-4">🎨 Personalização</h3>
+                            <div class="border-t border-slate-700 pt-4 sm:pt-6">
+                                <h3 class="text-base sm:text-lg font-semibold mb-3 sm:mb-4">🎨 Personalização</h3>
                                 
-                                <div class="grid grid-cols-2 gap-4 mb-4">
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
                                     <div>
                                         <label class="block text-sm font-medium mb-2">Cor do QR Code</label>
-                                        <div class="flex items-center gap-3">
+                                        <div class="flex items-center gap-2 sm:gap-3">
                                             <input 
                                                 type="color" 
                                                 id="qr-color" 
@@ -174,14 +205,14 @@
                                                 id="qr-color-text"
                                                 value="#000000"
                                                 oninput="syncColorText('qr'); updatePreview();"
-                                                class="flex-1 px-3 py-2 bg-slate-900 border border-slate-600 rounded-lg text-sm text-white"
+                                                class="flex-1 px-2 sm:px-3 py-2 bg-slate-900 border border-slate-600 rounded-lg text-xs sm:text-sm text-white"
                                             >
                                         </div>
                                     </div>
                                     
                                     <div>
                                         <label class="block text-sm font-medium mb-2">Cor de Fundo</label>
-                                        <div class="flex items-center gap-3">
+                                        <div class="flex items-center gap-2 sm:gap-3">
                                             <input 
                                                 type="color" 
                                                 id="bg-color" 
@@ -194,7 +225,7 @@
                                                 id="bg-color-text"
                                                 value="#ffffff"
                                                 oninput="syncColorText('bg'); updatePreview();"
-                                                class="flex-1 px-3 py-2 bg-slate-900 border border-slate-600 rounded-lg text-sm text-white"
+                                                class="flex-1 px-2 sm:px-3 py-2 bg-slate-900 border border-slate-600 rounded-lg text-xs sm:text-sm text-white"
                                             >
                                         </div>
                                     </div>
@@ -208,7 +239,7 @@
                                         id="logo-upload" 
                                         accept="image/*"
                                         onchange="handleLogoUpload(event)"
-                                        class="w-full px-4 py-3 bg-slate-900 border border-slate-600 rounded-lg text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-700 file:cursor-pointer"
+                                        class="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-slate-900 border border-slate-600 rounded-lg text-xs sm:text-sm text-gray-400 file:mr-3 sm:file:mr-4 file:py-1.5 sm:file:py-2 file:px-3 sm:file:px-4 file:rounded-lg file:border-0 file:text-xs sm:file:text-sm file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-700 file:cursor-pointer"
                                     >
                                     <p class="text-xs text-gray-500 mt-2">PNG ou JPG, máx 2MB</p>
                                 </div>
@@ -217,22 +248,22 @@
                                 <div class="mt-4">
                                     <label class="block text-sm font-medium mb-2">Presets Rápidos</label>
                                     <div class="flex gap-2 flex-wrap">
-                                        <button type="button" onclick="applyPreset('#000000', '#ffffff')" class="w-10 h-10 rounded-lg border-2 border-slate-600 bg-white relative overflow-hidden" title="Clássico">
+                                        <button type="button" onclick="applyPreset('#000000', '#ffffff')" class="w-9 h-9 sm:w-10 sm:h-10 rounded-lg border-2 border-slate-600 bg-white relative overflow-hidden" title="Clássico">
                                             <div class="absolute inset-0 bg-black" style="clip-path: polygon(0 0, 100% 0, 0 100%);"></div>
                                         </button>
-                                        <button type="button" onclick="applyPreset('#3b82f6', '#ffffff')" class="w-10 h-10 rounded-lg border-2 border-slate-600 bg-white relative overflow-hidden" title="Azul">
+                                        <button type="button" onclick="applyPreset('#3b82f6', '#ffffff')" class="w-9 h-9 sm:w-10 sm:h-10 rounded-lg border-2 border-slate-600 bg-white relative overflow-hidden" title="Azul">
                                             <div class="absolute inset-0 bg-blue-500" style="clip-path: polygon(0 0, 100% 0, 0 100%);"></div>
                                         </button>
-                                        <button type="button" onclick="applyPreset('#10b981', '#ffffff')" class="w-10 h-10 rounded-lg border-2 border-slate-600 bg-white relative overflow-hidden" title="Verde">
+                                        <button type="button" onclick="applyPreset('#10b981', '#ffffff')" class="w-9 h-9 sm:w-10 sm:h-10 rounded-lg border-2 border-slate-600 bg-white relative overflow-hidden" title="Verde">
                                             <div class="absolute inset-0 bg-green-500" style="clip-path: polygon(0 0, 100% 0, 0 100%);"></div>
                                         </button>
-                                        <button type="button" onclick="applyPreset('#8b5cf6', '#ffffff')" class="w-10 h-10 rounded-lg border-2 border-slate-600 bg-white relative overflow-hidden" title="Roxo">
+                                        <button type="button" onclick="applyPreset('#8b5cf6', '#ffffff')" class="w-9 h-9 sm:w-10 sm:h-10 rounded-lg border-2 border-slate-600 bg-white relative overflow-hidden" title="Roxo">
                                             <div class="absolute inset-0 bg-purple-500" style="clip-path: polygon(0 0, 100% 0, 0 100%);"></div>
                                         </button>
-                                        <button type="button" onclick="applyPreset('#ef4444', '#ffffff')" class="w-10 h-10 rounded-lg border-2 border-slate-600 bg-white relative overflow-hidden" title="Vermelho">
+                                        <button type="button" onclick="applyPreset('#ef4444', '#ffffff')" class="w-9 h-9 sm:w-10 sm:h-10 rounded-lg border-2 border-slate-600 bg-white relative overflow-hidden" title="Vermelho">
                                             <div class="absolute inset-0 bg-red-500" style="clip-path: polygon(0 0, 100% 0, 0 100%);"></div>
                                         </button>
-                                        <button type="button" onclick="applyPreset('#ffffff', '#000000')" class="w-10 h-10 rounded-lg border-2 border-slate-600 bg-black relative overflow-hidden" title="Invertido">
+                                        <button type="button" onclick="applyPreset('#ffffff', '#000000')" class="w-9 h-9 sm:w-10 sm:h-10 rounded-lg border-2 border-slate-600 bg-black relative overflow-hidden" title="Invertido">
                                             <div class="absolute inset-0 bg-white" style="clip-path: polygon(0 0, 100% 0, 0 100%);"></div>
                                         </button>
                                     </div>
@@ -241,7 +272,7 @@
 
                             <button 
                                 type="submit" 
-                                class="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 py-4 rounded-lg font-semibold text-lg transition-all shadow-lg"
+                                class="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 py-3 sm:py-4 rounded-lg font-semibold text-base sm:text-lg transition-all shadow-lg"
                             >
                                 🎨 Gerar QR Code
                             </button>
@@ -251,50 +282,50 @@
                 </div>
 
                 <!-- Preview -->
-                <div class="bg-slate-800/50 backdrop-blur-lg rounded-2xl shadow-2xl p-8 card-hover border border-slate-700">
-                    <h2 class="text-2xl font-bold mb-6 text-center">Preview</h2>
+                <div class="bg-slate-800/50 backdrop-blur-lg rounded-2xl shadow-2xl p-6 sm:p-8 card-hover border border-slate-700">
+                    <h2 class="text-xl sm:text-2xl font-bold mb-4 sm:mb-6 text-center">Preview</h2>
                     
-                    <div id="preview-container" class="bg-white p-8 rounded-2xl mb-6 flex items-center justify-center min-h-[350px]">
-                        <canvas id="qr-canvas" style="display: none;"></canvas>
+                    <div id="preview-container" class="bg-white p-6 sm:p-8 rounded-2xl mb-4 sm:mb-6 flex items-center justify-center min-h-[300px] sm:min-h-[350px]">
+                        <canvas id="qr-canvas" style="display: none; max-width: 100%; height: auto;"></canvas>
                         <div id="preview-placeholder" class="text-center text-gray-400">
-                            <svg class="w-24 h-24 mx-auto mb-4 opacity-20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg class="w-16 h-16 sm:w-24 sm:h-24 mx-auto mb-4 opacity-20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"></path>
                             </svg>
-                            <p>Digite uma URL para ver o preview</p>
+                            <p class="text-sm sm:text-base px-4">Digite uma URL para ver o preview</p>
                         </div>
                     </div>
 
-                    <div id="action-buttons" class="hidden space-y-3">
+                    <div id="action-buttons" class="hidden space-y-2 sm:space-y-3">
                         <button 
                             onclick="downloadQRCode()" 
-                            class="w-full bg-green-600 hover:bg-green-700 py-3 rounded-lg font-semibold flex items-center justify-center gap-2"
+                            class="w-full bg-green-600 hover:bg-green-700 py-2.5 sm:py-3 rounded-lg font-semibold flex items-center justify-center gap-2 text-sm sm:text-base"
                         >
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
                             </svg>
                             Baixar PNG
                         </button>
                         <button 
                             onclick="printQRCode()" 
-                            class="w-full bg-purple-600 hover:bg-purple-700 py-3 rounded-lg font-semibold flex items-center justify-center gap-2"
+                            class="w-full bg-purple-600 hover:bg-purple-700 py-2.5 sm:py-3 rounded-lg font-semibold flex items-center justify-center gap-2 text-sm sm:text-base"
                         >
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path>
                             </svg>
                             Imprimir
                         </button>
                         <button 
                             onclick="shareQRCode()" 
-                            class="w-full bg-blue-600 hover:bg-blue-700 py-3 rounded-lg font-semibold flex items-center justify-center gap-2"
+                            class="w-full bg-blue-600 hover:bg-blue-700 py-2.5 sm:py-3 rounded-lg font-semibold flex items-center justify-center gap-2 text-sm sm:text-base"
                         >
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"></path>
                             </svg>
                             Compartilhar
                         </button>
                         <button 
                             onclick="location.reload()" 
-                            class="w-full bg-slate-700 hover:bg-slate-600 py-3 rounded-lg font-semibold"
+                            class="w-full bg-slate-700 hover:bg-slate-600 py-2.5 sm:py-3 rounded-lg font-semibold text-sm sm:text-base"
                         >
                             ➕ Criar Outro
                         </button>
