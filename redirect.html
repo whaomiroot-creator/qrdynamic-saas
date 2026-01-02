@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Redirecionando...</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script type="module">
+        import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
+        window.supabase = createClient('https://ysyarhpqpslfehzcrtom.supabase.co', 'sb_publishable_HjTlw4G1Ohf5bxTlJtjv9w_Wi2QCO2M')
+    </script>
+    <style>
+        body {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+        }
+        .loader {
+            border: 4px solid rgba(59, 130, 246, 0.3);
+            border-top: 4px solid #3b82f6;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body class="min-h-screen flex items-center justify-center text-gray-100">
+    
+    <div class="text-center">
+        <div class="loader mx-auto mb-6"></div>
+        <h1 class="text-2xl font-bold mb-2">Redirecionando...</h1>
+        <p class="text-gray-400" id="status">Aguarde um momento</p>
+    </div>
+
+    <script type="module">
+        async function redirect() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const linkId = urlParams.get('id');
+
+            if (!linkId) {
+                document.getElementById('status').textContent = 'Link inválido';
+                setTimeout(() => window.location.href = '/index.html', 2000);
+                return;
+            }
+
+            try {
+                const { data, error } = await window.supabase
+                    .from('qr_links')
+                    .select('destination_url, clicks')
+                    .eq('slug', linkId)
+                    .single();
+
+                if (error || !data) {
+                    document.getElementById('status').textContent = 'Link não encontrado';
+                    setTimeout(() => window.location.href = '/index.html', 2000);
+                    return;
+                }
+
+                await window.supabase
+                    .from('qr_links')
+                    .update({ clicks: (data.clicks || 0) + 1 })
+                    .eq('slug', linkId);
+
+                window.location.href = data.destination_url;
+
+            } catch (err) {
+                document.getElementById('status').textContent = 'Erro ao redirecionar';
+                console.error(err);
+                setTimeout(() => window.location.href = '/index.html', 2000);
+            }
+        }
+
+        redirect();
+    </script>
+
+</body>
+</html>

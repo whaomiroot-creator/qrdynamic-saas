@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meus QR Codes - Painel de Administração</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script type="module">
+        import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
+        window.supabase = createClient('https://ysyarhpqpslfehzcrtom.supabase.co', 'sb_publishable_HjTlw4G1Ohf5bxTlJtjv9w_Wi2QCO2M')
+    </script>
+    <style>
+        body {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+        }
+        .gradient-text {
+            background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+    </style>
+</head>
+<body class="min-h-screen text-gray-100">
+    
+    <!-- Header -->
+    <header class="container mx-auto px-4 py-6">
+        <nav class="flex justify-between items-center">
+            <div class="flex items-center space-x-2">
+                <svg class="w-8 h-8 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"></path>
+                </svg>
+                <span class="text-xl font-bold">QRDynamic</span>
+            </div>
+            <a href="index.html" class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg transition-colors text-sm font-medium">
+                Criar Novo
+            </a>
+        </nav>
+    </header>
+
+    <main class="container mx-auto px-4 py-12">
+        
+        <!-- Login Section -->
+        <div id="login-section" class="max-w-md mx-auto">
+            <div class="bg-slate-800/50 backdrop-blur-lg rounded-2xl shadow-2xl p-8 border border-slate-700">
+                <h1 class="text-3xl font-bold mb-6 text-center">
+                    Acessar <span class="gradient-text">Painel</span>
+                </h1>
+                <p class="text-gray-400 text-center mb-6">Digite seu email para gerenciar seus QR Codes</p>
+                
+                <form id="login-form" class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium mb-2">Email</label>
+                        <input 
+                            type="email" 
+                            id="login-email" 
+                            placeholder="seuemail@exemplo.com" 
+                            required
+                            class="w-full px-4 py-3 bg-slate-900 border border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+                        >
+                    </div>
+                    <button 
+                        type="submit" 
+                        class="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 py-3 rounded-lg font-semibold transition-all"
+                    >
+                        Acessar Meus QR Codes
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Dashboard Section -->
+        <div id="dashboard-section" class="hidden max-w-6xl mx-auto">
+            <div class="flex justify-between items-center mb-8">
+                <div>
+                    <h1 class="text-3xl font-bold">Meus QR Codes</h1>
+                    <p class="text-gray-400" id="user-email-display"></p>
+                </div>
+                <button 
+                    onclick="logout()" 
+                    class="bg-slate-700 hover:bg-slate-600 px-4 py-2 rounded-lg transition-colors"
+                >
+                    Sair
+                </button>
+            </div>
+
+            <div id="links-container" class="space-y-4">
+                <!-- Links will be loaded here -->
+            </div>
+
+            <div id="empty-state" class="hidden text-center py-12">
+                <div class="text-6xl mb-4">📭</div>
+                <h2 class="text-2xl font-bold mb-2">Nenhum QR Code ainda</h2>
+                <p class="text-gray-400 mb-6">Crie seu primeiro QR Code dinâmico!</p>
+                <a href="index.html" class="inline-block bg-blue-600 hover:bg-blue-700 px-6 py-3 rounded-lg font-semibold transition-colors">
+                    Criar QR Code
+                </a>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Edit Modal -->
+    <div id="edit-modal" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+        <div class="bg-slate-800 rounded-2xl p-8 max-w-md w-full border border-slate-700">
+            <h2 class="text-2xl font-bold mb-6">Editar QR Code</h2>
+            
+            <form id="edit-form" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium mb-2">Nome do Link</label>
+                    <input 
+                        type="text" 
+                        id="edit-name" 
+                        class="w-full px-4 py-3 bg-slate-900 border border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                    >
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-2">URL de Destino</label>
+                    <input 
+                        type="url" 
+                        id="edit-url" 
+                        required
+                        class="w-full px-4 py-3 bg-slate-900 border border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                    >
+                </div>
+                <div class="flex gap-3">
+                    <button 
+                        type="submit" 
+                        class="flex-1 bg-blue-600 hover:bg-blue-700 py-3 rounded-lg font-semibold transition-colors"
+                    >
+                        Salvar
+                    </button>
+                    <button 
+                        type="button" 
+                        onclick="closeEditModal()" 
+                        class="flex-1 bg-slate-700 hover:bg-slate-600 py-3 rounded-lg font-semibold transition-colors"
+                    >
+                        Cancelar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        let currentUserEmail = localStorage.getItem('userEmail');
+        let currentEditSlug = null;
+
+        if (currentUserEmail) {
+            showDashboard();
+        }
+
+        document.getElementById('login-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            currentUserEmail = document.getElementById('login-email').value;
+            localStorage.setItem('userEmail', currentUserEmail);
+            showDashboard();
+        });
+
+        async function showDashboard() {
+            document.getElementById('login-section').classList.add('hidden');
+            document.getElementById('dashboard-section').classList.remove('hidden');
+            document.getElementById('user-email-display').textContent = currentUserEmail;
+            await loadLinks();
+        }
+
+        function logout() {
+            localStorage.removeItem('userEmail');
+            location.reload();
+        }
+
+        async function loadLinks() {
+            try {
+                const { data, error } = await window.supabase
+                    .from('qr_links')
+                    .select('*')
+                    .eq('user_email', currentUserEmail)
+                    .order('created_at', { ascending: false });
+
+                if (error) throw error;
+
+                const container = document.getElementById('links-container');
+                const emptyState = document.getElementById('empty-state');
+
+                if (!data || data.length === 0) {
+                    container.innerHTML = '';
+                    emptyState.classList.remove('hidden');
+                    return;
+                }
+
+                emptyState.classList.add('hidden');
+                container.innerHTML = data.map(link => `
+                    <div class="bg-slate-800/50 backdrop-blur-lg rounded-xl p-6 border border-slate-700">
+                        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                            <div class="flex-1">
+                                <h3 class="text-xl font-bold mb-2">${link.link_name}</h3>
+                                <p class="text-sm text-gray-400 mb-2 break-all">${link.destination_url}</p>
+                                <div class="flex gap-4 text-sm text-gray-500">
+                                    <span>👁️ ${link.clicks || 0} cliques</span>
+                                    <span>📅 ${new Date(link.created_at).toLocaleDateString('pt-BR')}</span>
+                                </div>
+                            </div>
+                            <div class="flex gap-2">
+                                <button 
+                                    onclick="copyLinkUrl('${link.slug}')" 
+                                    class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg transition-colors text-sm font-medium whitespace-nowrap"
+                                >
+                                    📋 Copiar Link
+                                </button>
+                                <button 
+                                    onclick="openEditModal('${link.slug}', '${link.link_name}', '${link.destination_url}')" 
+                                    class="bg-green-600 hover:bg-green-700 px-4 py-2 rounded-lg transition-colors text-sm font-medium"
+                                >
+                                    ✏️ Editar
+                                </button>
+                                <button 
+                                    onclick="deleteLink('${link.slug}')" 
+                                    class="bg-red-600 hover:bg-red-700 px-4 py-2 rounded-lg transition-colors text-sm font-medium"
+                                >
+                                    🗑️
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+
+            } catch (error) {
+                alert('Erro ao carregar links: ' + error.message);
+            }
+        }
+
+        function copyLinkUrl(slug) {
+            const url = `${window.location.origin}/redirect.html?id=${slug}`;
+            navigator.clipboard.writeText(url).then(() => {
+                alert('Link copiado!');
+            });
+        }
+
+        function openEditModal(slug, name, url) {
+            currentEditSlug = slug;
+            document.getElementById('edit-name').value = name;
+            document.getElementById('edit-url').value = url;
+            document.getElementById('edit-modal').classList.remove('hidden');
+        }
+
+        function closeEditModal() {
+            document.getElementById('edit-modal').classList.add('hidden');
+            currentEditSlug = null;
+        }
+
+        document.getElementById('edit-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const newName = document.getElementById('edit-name').value;
+            const newUrl = document.getElementById('edit-url').value;
+
+            try {
+                const { error } = await window.supabase
+                    .from('qr_links')
+                    .update({ 
+                        link_name: newName, 
+                        destination_url: newUrl 
+                    })
+                    .eq('slug', currentEditSlug);
+
+                if (error) throw error;
+
+                closeEditModal();
+                await loadLinks();
+                alert('QR Code atualizado com sucesso!');
+
+            } catch (error) {
+                alert('Erro ao atualizar: ' + error.message);
+            }
+        });
+
+        async function deleteLink(slug) {
+            if (!confirm('Tem certeza que deseja excluir este QR Code?')) return;
+
+            try {
+                const { error } = await window.supabase
+                    .from('qr_links')
+                    .delete()
+                    .eq('slug', slug);
+
+                if (error) throw error;
+
+                await loadLinks();
+                alert('QR Code excluído com sucesso!');
+
+            } catch (error) {
+                alert('Erro ao excluir: ' + error.message);
+            }
+        }
+    </script>
+
+</body>
+</html>
