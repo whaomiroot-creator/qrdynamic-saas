@@ -3,29 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gerador de QR Code Dinâmico - Crie QR Codes Editáveis</title>
-    <meta name="description" content="Crie QR Codes dinâmicos que você pode editar a qualquer momento sem precisar reimprimir">
+    <title>Gerador de QR Code Dinâmico</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-    <script type="module">
-        import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
-<script type="module">
-    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
-    window.supabase = createClient('https://ysyarhpqpslfehzcrtom.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlzeWFyaHBxcHNsZmVoemNydG9tIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjcyMTg2NDcsImV4cCI6MjA4Mjc5NDY0N30.A2eXYvLaOPVszW2jsAy5OzPOYt6gQF2iUp8XSjyljPM')
-</script>
+    <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.3/dist/umd/supabase.min.js"></script>
     <style>
-        body {
-            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
-        }
+        body { background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); }
         .gradient-text {
             background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
         }
-        .card-hover {
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
+        .card-hover { transition: transform 0.3s ease, box-shadow 0.3s ease; }
         .card-hover:hover {
             transform: translateY(-5px);
             box-shadow: 0 20px 40px rgba(59, 130, 246, 0.3);
@@ -38,7 +28,6 @@
 </head>
 <body class="min-h-screen text-gray-100">
     
-    <!-- Header -->
     <header class="container mx-auto px-4 py-6">
         <nav class="flex justify-between items-center">
             <div class="flex items-center space-x-2">
@@ -53,22 +42,19 @@
         </nav>
     </header>
 
-    <!-- Hero Section -->
     <main class="container mx-auto px-4 py-12">
         <div class="text-center mb-12">
             <h1 class="text-4xl md:text-6xl font-bold mb-4">
                 QR Codes <span class="gradient-text">Dinâmicos</span>
             </h1>
             <p class="text-xl text-gray-400 max-w-2xl mx-auto">
-                Crie QR Codes que você pode editar depois de imprimir. Altere o destino sem gerar um novo código!
+                Crie QR Codes que você pode editar depois de imprimir!
             </p>
         </div>
 
-        <!-- Main Card -->
         <div class="max-w-4xl mx-auto">
             <div class="bg-slate-800/50 backdrop-blur-lg rounded-2xl shadow-2xl p-8 card-hover border border-slate-700">
                 
-                <!-- Form Section -->
                 <div id="form-section">
                     <h2 class="text-2xl font-bold mb-6 text-center">Criar Novo QR Code</h2>
                     
@@ -80,45 +66,44 @@
                                 id="destination-url" 
                                 placeholder="https://seusite.com.br" 
                                 required
-                                class="w-full px-4 py-3 bg-slate-900 border border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
+                                class="w-full px-4 py-3 bg-slate-900 border border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-white"
                             >
                         </div>
 
                         <div>
-                            <label class="block text-sm font-medium mb-2">Nome do Link (opcional)</label>
+                            <label class="block text-sm font-medium mb-2">Nome (opcional)</label>
                             <input 
                                 type="text" 
                                 id="link-name" 
-                                placeholder="Ex: Cardápio Digital, Instagram, WhatsApp" 
-                                class="w-full px-4 py-3 bg-slate-900 border border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
+                                placeholder="Ex: Instagram, WhatsApp" 
+                                class="w-full px-4 py-3 bg-slate-900 border border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-white"
                             >
                         </div>
 
                         <div>
-                            <label class="block text-sm font-medium mb-2">Seu Email (para gerenciar depois)</label>
+                            <label class="block text-sm font-medium mb-2">Seu Email</label>
                             <input 
                                 type="email" 
                                 id="user-email" 
                                 placeholder="seuemail@exemplo.com" 
                                 required
-                                class="w-full px-4 py-3 bg-slate-900 border border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
+                                class="w-full px-4 py-3 bg-slate-900 border border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-white"
                             >
                         </div>
 
                         <button 
                             type="submit" 
-                            class="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 py-4 rounded-lg font-semibold text-lg transition-all transform hover:scale-105 shadow-lg"
+                            class="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 py-4 rounded-lg font-semibold text-lg transition-all shadow-lg"
                         >
                             Gerar QR Code
                         </button>
                     </form>
                 </div>
 
-                <!-- QR Code Display Section -->
                 <div id="qr-section" class="hidden">
                     <div class="text-center mb-6">
-                        <h2 class="text-2xl font-bold mb-2">🎉 QR Code Criado com Sucesso!</h2>
-                        <p class="text-gray-400">Seu QR Code dinâmico está pronto para uso</p>
+                        <h2 class="text-2xl font-bold mb-2">🎉 QR Code Criado!</h2>
+                        <p class="text-gray-400">Seu QR Code dinâmico está pronto</p>
                     </div>
 
                     <div class="bg-white p-8 rounded-2xl mb-6">
@@ -132,11 +117,11 @@
                                 type="text" 
                                 id="short-url" 
                                 readonly 
-                                class="flex-1 px-4 py-2 bg-slate-800 border border-slate-600 rounded-lg outline-none"
+                                class="flex-1 px-4 py-2 bg-slate-800 border border-slate-600 rounded-lg text-white"
                             >
                             <button 
                                 onclick="copyUrl()" 
-                                class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg transition-colors whitespace-nowrap"
+                                class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg transition-colors"
                             >
                                 Copiar
                             </button>
@@ -146,50 +131,29 @@
                     <div class="grid md:grid-cols-2 gap-4">
                         <button 
                             onclick="downloadQRCode()" 
-                            class="bg-green-600 hover:bg-green-700 py-3 rounded-lg font-semibold transition-colors"
+                            class="bg-green-600 hover:bg-green-700 py-3 rounded-lg font-semibold"
                         >
                             📥 Download PNG
                         </button>
                         <button 
                             onclick="location.reload()" 
-                            class="bg-slate-700 hover:bg-slate-600 py-3 rounded-lg font-semibold transition-colors"
+                            class="bg-slate-700 hover:bg-slate-600 py-3 rounded-lg font-semibold"
                         >
                             Criar Outro
                         </button>
-                    </div>
-
-                    <div class="mt-6 p-4 bg-blue-900/30 border border-blue-700 rounded-lg">
-                        <p class="text-sm text-blue-200">
-                            💡 <strong>Importante:</strong> Salve o link acima! Use-o para acessar o painel de edição e alterar o destino deste QR Code a qualquer momento.
-                        </p>
                     </div>
                 </div>
 
             </div>
         </div>
-
-        <!-- Features Section -->
-        <div class="max-w-6xl mx-auto mt-16 grid md:grid-cols-3 gap-8">
-            <div class="text-center p-6">
-                <div class="text-4xl mb-4">🔄</div>
-                <h3 class="text-xl font-bold mb-2">Totalmente Editável</h3>
-                <p class="text-gray-400">Altere o destino do QR Code sem precisar reimprimir</p>
-            </div>
-            <div class="text-center p-6">
-                <div class="text-4xl mb-4">⚡</div>
-                <h3 class="text-xl font-bold mb-2">Instantâneo</h3>
-                <p class="text-gray-400">Crie e baixe seu QR Code em segundos</p>
-            </div>
-            <div class="text-center p-6">
-                <div class="text-4xl mb-4">📊</div>
-                <h3 class="text-xl font-bold mb-2">Gerenciamento Simples</h3>
-                <p class="text-gray-400">Painel intuitivo para gerenciar todos seus QR Codes</p>
-            </div>
-        </div>
     </main>
 
     <script>
-        let currentQRCode = null;
+        const supabase = window.supabase.createClient(
+            'https://ysyarhpqpslfehzcrtom.supabase.co',
+            'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlzeWFyaHBxcHNsZmVoemNydG9tIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjcyMTg2NDcsImV4cCI6MjA4Mjc5NDY0N30.A2eXYvLaOPVszW2jsAy5OzPOYt6gQF2iUp8XSjyljPM'
+        );
+
         let currentSlug = null;
 
         function generateSlug() {
@@ -209,17 +173,14 @@
             const slug = generateSlug();
 
             try {
-                const { data, error } = await window.supabase
+                const { data, error } = await supabase
                     .from('qr_links')
-                    .insert([
-                        {
-                            slug: slug,
-                            destination_url: destinationUrl,
-                            link_name: linkName,
-                            user_email: userEmail,
-                            created_at: new Date().toISOString()
-                        }
-                    ])
+                    .insert([{
+                        slug: slug,
+                        destination_url: destinationUrl,
+                        link_name: linkName,
+                        user_email: userEmail
+                    }])
                     .select();
 
                 if (error) throw error;
@@ -232,7 +193,7 @@
                 const qrContainer = document.getElementById('qrcode-container');
                 qrContainer.innerHTML = '';
                 
-                currentQRCode = new QRCode(qrContainer, {
+                new QRCode(qrContainer, {
                     text: shortUrl,
                     width: 256,
                     height: 256,
@@ -245,7 +206,7 @@
                 document.getElementById('qr-section').classList.remove('hidden');
 
             } catch (error) {
-                alert('Erro ao criar QR Code: ' + error.message);
+                alert('Erro: ' + error.message);
                 submitBtn.disabled = false;
                 submitBtn.textContent = 'Gerar QR Code';
             }
@@ -254,12 +215,8 @@
         function copyUrl() {
             const urlInput = document.getElementById('short-url');
             urlInput.select();
-            document.execCommand('copy');
-            
-            const btn = event.target;
-            const originalText = btn.textContent;
-            btn.textContent = '✓ Copiado!';
-            setTimeout(() => btn.textContent = originalText, 2000);
+            navigator.clipboard.writeText(urlInput.value);
+            alert('Link copiado!');
         }
 
         function downloadQRCode() {
@@ -274,5 +231,3 @@
 
 </body>
 </html>
-
-
