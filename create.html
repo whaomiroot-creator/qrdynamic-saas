@@ -115,7 +115,7 @@
                                 >
                             </div>
 
-                            <!-- NOVO: Data de Expiração -->
+                            <!-- Data de Expiração -->
                             <div>
                                 <label class="block text-sm font-medium mb-2 flex items-center gap-2">
                                     <svg class="w-4 h-4 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -135,6 +135,23 @@
                                     <button type="button" onclick="setExpiry(90)" class="text-xs bg-slate-700 hover:bg-slate-600 px-3 py-1 rounded">+ 90 dias</button>
                                     <button type="button" onclick="clearExpiry()" class="text-xs bg-red-600 hover:bg-red-700 px-3 py-1 rounded">Limpar</button>
                                 </div>
+                            </div>
+
+                            <!-- NOVO: Proteção por Senha -->
+                            <div>
+                                <label class="block text-sm font-medium mb-2 flex items-center gap-2">
+                                    <svg class="w-4 h-4 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                                    </svg>
+                                    Proteção por Senha (opcional)
+                                </label>
+                                <input 
+                                    type="password" 
+                                    id="qr-password" 
+                                    placeholder="Digite uma senha para proteger o link"
+                                    class="w-full px-4 py-3 bg-slate-900 border border-slate-600 rounded-lg focus:ring-2 focus:ring-purple-500 outline-none text-white"
+                                >
+                                <p class="text-xs text-gray-500 mt-2">Deixe vazio para QR Code sem proteção</p>
                             </div>
 
                             <!-- Customização de Cores -->
@@ -322,7 +339,7 @@
             return Math.random().toString(36).substring(2, 8) + Date.now().toString(36);
         }
 
-        // Funções de Expiração [web:108][web:111]
+        // Funções de Expiração
         function setExpiry(days) {
             const date = new Date();
             date.setDate(date.getDate() + days);
@@ -462,6 +479,9 @@
             const expiresAtInput = document.getElementById('expires-at').value;
             const expiresAt = expiresAtInput ? new Date(expiresAtInput).toISOString() : null;
 
+            // Pegar senha
+            const password = document.getElementById('qr-password').value.trim() || null;
+
             try {
                 const { data, error } = await supabase
                     .from('qr_links')
@@ -472,7 +492,8 @@
                         user_email: currentUserEmail,
                         qr_color: qrColor,
                         bg_color: bgColor,
-                        expires_at: expiresAt
+                        expires_at: expiresAt,
+                        password: password
                     }])
                     .select();
 
@@ -486,9 +507,17 @@
                 
                 document.getElementById('action-buttons').classList.remove('hidden');
                 
-                if (expiresAt) {
-                    const expDate = new Date(expiresAt).toLocaleString('pt-BR');
-                    alert(`✅ QR Code criado com sucesso!\n⏰ Expira em: ${expDate}`);
+                // Alert melhorado
+                if (expiresAt || password) {
+                    let message = '✅ QR Code criado com sucesso!';
+                    if (expiresAt) {
+                        const expDate = new Date(expiresAt).toLocaleString('pt-BR');
+                        message += `\n⏰ Expira em: ${expDate}`;
+                    }
+                    if (password) {
+                        message += `\n🔒 Protegido por senha`;
+                    }
+                    alert(message);
                 } else {
                     alert('✅ QR Code criado com sucesso!');
                 }
