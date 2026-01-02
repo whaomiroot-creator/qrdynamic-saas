@@ -47,6 +47,10 @@
             background: rgba(251, 146, 60, 0.1);
             border: 1px solid rgba(251, 146, 60, 0.3);
         }
+        .limit-box {
+            background: rgba(6, 182, 212, 0.1);
+            border: 1px solid rgba(6, 182, 212, 0.3);
+        }
         .password-box {
             background: rgba(139, 92, 246, 0.1);
             border: 1px solid rgba(139, 92, 246, 0.3);
@@ -91,7 +95,7 @@
                 // Buscar destino
                 const { data: link, error } = await supabase
                     .from('qr_links')
-                    .select('destination_url, clicks, expires_at, password')
+                    .select('destination_url, clicks, expires_at, password, click_limit')
                     .eq('slug', slug)
                     .single();
 
@@ -101,6 +105,12 @@
                 }
 
                 currentLink = link;
+
+                // NOVO: Verificar limite de cliques PRIMEIRO
+                if (link.click_limit && link.clicks >= link.click_limit) {
+                    showLimitReached(link.clicks, link.click_limit);
+                    return;
+                }
 
                 // Verificar expiração
                 if (link.expires_at) {
@@ -250,6 +260,22 @@
                     <p class="text-gray-300 mb-4">Este link expirou em:</p>
                     <p class="text-xl font-semibold text-orange-400">${formatted}</p>
                     <p class="text-sm text-gray-400 mt-4">Entre em contato com o criador do QR Code para obter um novo link.</p>
+                </div>
+            `;
+        }
+
+        // NOVO: Tela de limite atingido
+        function showLimitReached(clicks, limit) {
+            document.body.innerHTML = `
+                <div class="message-box limit-box">
+                    <div class="text-6xl mb-4">🚫</div>
+                    <h1 class="text-2xl font-bold mb-2">Limite de Acessos Atingido</h1>
+                    <p class="text-gray-300 mb-4">Este QR Code já recebeu o máximo de acessos permitidos.</p>
+                    <div class="bg-cyan-900/30 border border-cyan-600/50 rounded-lg p-4 mb-4">
+                        <p class="text-cyan-400 font-bold text-3xl mb-1">${clicks} / ${limit}</p>
+                        <p class="text-sm text-gray-400">Cliques totais</p>
+                    </div>
+                    <p class="text-sm text-gray-400">Entre em contato com o criador do QR Code para solicitar aumento do limite.</p>
                 </div>
             `;
         }
