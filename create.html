@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Criar QR Code - QRDynamic</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.3/dist/umd/supabase.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <style>
         body { background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); }
         .gradient-text {
@@ -19,10 +19,6 @@
             transform: translateY(-5px);
             box-shadow: 0 20px 40px rgba(59, 130, 246, 0.3);
         }
-        #qrcode-container canvas, #qrcode-container img {
-            border-radius: 1rem;
-            margin: 0 auto;
-        }
         
         @media print {
             body * { visibility: hidden; }
@@ -34,6 +30,22 @@
                 transform: translate(-50%, -50%);
             }
             .no-print { display: none !important; }
+        }
+
+        .color-picker {
+            -webkit-appearance: none;
+            border: none;
+            width: 60px;
+            height: 40px;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+        .color-picker::-webkit-color-swatch-wrapper {
+            padding: 0;
+        }
+        .color-picker::-webkit-color-swatch {
+            border: 2px solid #475569;
+            border-radius: 8px;
         }
     </style>
 </head>
@@ -68,83 +80,156 @@
                 QR Codes <span class="gradient-text">Dinâmicos</span>
             </h1>
             <p class="text-xl text-gray-400 max-w-2xl mx-auto">
-                Crie QR Codes que você pode editar depois de imprimir!
+                Crie QR Codes personalizados com suas cores e logo!
             </p>
         </div>
 
-        <div class="max-w-4xl mx-auto">
-            <div class="bg-slate-800/50 backdrop-blur-lg rounded-2xl shadow-2xl p-8 card-hover border border-slate-700">
+        <div class="max-w-6xl mx-auto">
+            <div class="grid md:grid-cols-2 gap-8">
                 
-                <div id="form-section">
-                    <h2 class="text-2xl font-bold mb-6 text-center">Criar Novo QR Code</h2>
+                <!-- Formulário -->
+                <div class="bg-slate-800/50 backdrop-blur-lg rounded-2xl shadow-2xl p-8 card-hover border border-slate-700">
                     
-                    <form id="qr-form" class="space-y-6">
-                        <div>
-                            <label class="block text-sm font-medium mb-2">URL de Destino</label>
-                            <input 
-                                type="url" 
-                                id="destination-url" 
-                                placeholder="https://seusite.com.br" 
-                                required
-                                class="w-full px-4 py-3 bg-slate-900 border border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-white"
-                            >
-                        </div>
+                    <div id="form-section">
+                        <h2 class="text-2xl font-bold mb-6">Criar Novo QR Code</h2>
+                        
+                        <form id="qr-form" class="space-y-6">
+                            <div>
+                                <label class="block text-sm font-medium mb-2">URL de Destino</label>
+                                <input 
+                                    type="url" 
+                                    id="destination-url" 
+                                    placeholder="https://seusite.com.br" 
+                                    required
+                                    oninput="updatePreview()"
+                                    class="w-full px-4 py-3 bg-slate-900 border border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-white"
+                                >
+                            </div>
 
-                        <div>
-                            <label class="block text-sm font-medium mb-2">Nome do Link (opcional)</label>
-                            <input 
-                                type="text" 
-                                id="link-name" 
-                                placeholder="Ex: Instagram, WhatsApp, Site Principal" 
-                                class="w-full px-4 py-3 bg-slate-900 border border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-white"
-                            >
-                        </div>
+                            <div>
+                                <label class="block text-sm font-medium mb-2">Nome do Link (opcional)</label>
+                                <input 
+                                    type="text" 
+                                    id="link-name" 
+                                    placeholder="Ex: Instagram, WhatsApp" 
+                                    class="w-full px-4 py-3 bg-slate-900 border border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-white"
+                                >
+                            </div>
 
-                        <button 
-                            type="submit" 
-                            class="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 py-4 rounded-lg font-semibold text-lg transition-all shadow-lg"
-                        >
-                            🎨 Gerar QR Code
-                        </button>
-                    </form>
+                            <!-- Customização de Cores -->
+                            <div class="border-t border-slate-700 pt-6">
+                                <h3 class="text-lg font-semibold mb-4">🎨 Personalização</h3>
+                                
+                                <div class="grid grid-cols-2 gap-4 mb-4">
+                                    <div>
+                                        <label class="block text-sm font-medium mb-2">Cor do QR Code</label>
+                                        <div class="flex items-center gap-3">
+                                            <input 
+                                                type="color" 
+                                                id="qr-color" 
+                                                value="#000000"
+                                                oninput="updatePreview()"
+                                                class="color-picker"
+                                            >
+                                            <input 
+                                                type="text" 
+                                                id="qr-color-text"
+                                                value="#000000"
+                                                oninput="document.getElementById('qr-color').value = this.value; updatePreview();"
+                                                class="flex-1 px-3 py-2 bg-slate-900 border border-slate-600 rounded-lg text-sm text-white"
+                                            >
+                                        </div>
+                                    </div>
+                                    
+                                    <div>
+                                        <label class="block text-sm font-medium mb-2">Cor de Fundo</label>
+                                        <div class="flex items-center gap-3">
+                                            <input 
+                                                type="color" 
+                                                id="bg-color" 
+                                                value="#ffffff"
+                                                oninput="updatePreview()"
+                                                class="color-picker"
+                                            >
+                                            <input 
+                                                type="text" 
+                                                id="bg-color-text"
+                                                value="#ffffff"
+                                                oninput="document.getElementById('bg-color').value = this.value; updatePreview();"
+                                                class="flex-1 px-3 py-2 bg-slate-900 border border-slate-600 rounded-lg text-sm text-white"
+                                            >
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Upload de Logo -->
+                                <div>
+                                    <label class="block text-sm font-medium mb-2">Logo (opcional)</label>
+                                    <input 
+                                        type="file" 
+                                        id="logo-upload" 
+                                        accept="image/*"
+                                        onchange="handleLogoUpload(event)"
+                                        class="w-full px-4 py-3 bg-slate-900 border border-slate-600 rounded-lg text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-700 file:cursor-pointer"
+                                    >
+                                    <p class="text-xs text-gray-500 mt-2">PNG ou JPG, máx 2MB</p>
+                                </div>
+
+                                <!-- Presets de Cores -->
+                                <div class="mt-4">
+                                    <label class="block text-sm font-medium mb-2">Presets Rápidos</label>
+                                    <div class="flex gap-2 flex-wrap">
+                                        <button type="button" onclick="applyPreset('#000000', '#ffffff')" class="w-10 h-10 rounded-lg border-2 border-slate-600 bg-white relative overflow-hidden">
+                                            <div class="absolute inset-0 bg-black" style="clip-path: polygon(0 0, 100% 0, 0 100%);"></div>
+                                        </button>
+                                        <button type="button" onclick="applyPreset('#3b82f6', '#ffffff')" class="w-10 h-10 rounded-lg border-2 border-slate-600 bg-white relative overflow-hidden">
+                                            <div class="absolute inset-0 bg-blue-500" style="clip-path: polygon(0 0, 100% 0, 0 100%);"></div>
+                                        </button>
+                                        <button type="button" onclick="applyPreset('#10b981', '#ffffff')" class="w-10 h-10 rounded-lg border-2 border-slate-600 bg-white relative overflow-hidden">
+                                            <div class="absolute inset-0 bg-green-500" style="clip-path: polygon(0 0, 100% 0, 0 100%);"></div>
+                                        </button>
+                                        <button type="button" onclick="applyPreset('#8b5cf6', '#ffffff')" class="w-10 h-10 rounded-lg border-2 border-slate-600 bg-white relative overflow-hidden">
+                                            <div class="absolute inset-0 bg-purple-500" style="clip-path: polygon(0 0, 100% 0, 0 100%);"></div>
+                                        </button>
+                                        <button type="button" onclick="applyPreset('#ef4444', '#ffffff')" class="w-10 h-10 rounded-lg border-2 border-slate-600 bg-white relative overflow-hidden">
+                                            <div class="absolute inset-0 bg-red-500" style="clip-path: polygon(0 0, 100% 0, 0 100%);"></div>
+                                        </button>
+                                        <button type="button" onclick="applyPreset('#ffffff', '#000000')" class="w-10 h-10 rounded-lg border-2 border-slate-600 bg-black relative overflow-hidden">
+                                            <div class="absolute inset-0 bg-white" style="clip-path: polygon(0 0, 100% 0, 0 100%);"></div>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <button 
+                                type="submit" 
+                                class="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 py-4 rounded-lg font-semibold text-lg transition-all shadow-lg"
+                            >
+                                🎨 Gerar QR Code
+                            </button>
+                        </form>
+                    </div>
+
                 </div>
 
-                <div id="qr-section" class="hidden">
-                    <div class="text-center mb-6 no-print">
-                        <h2 class="text-2xl font-bold mb-2">🎉 QR Code Criado!</h2>
-                        <p class="text-gray-400">Seu QR Code dinâmico está pronto</p>
-                    </div>
-
-                    <div class="bg-white p-8 rounded-2xl mb-6 print-area">
-                        <div id="qrcode-container" class="flex justify-center"></div>
-                        <div class="text-center mt-4 text-gray-800">
-                            <p class="font-bold text-lg" id="print-link-name"></p>
-                            <p class="text-sm text-gray-600 break-all" id="print-short-url"></p>
+                <!-- Preview -->
+                <div class="bg-slate-800/50 backdrop-blur-lg rounded-2xl shadow-2xl p-8 card-hover border border-slate-700">
+                    <h2 class="text-2xl font-bold mb-6 text-center">Preview</h2>
+                    
+                    <div id="preview-container" class="bg-white p-8 rounded-2xl mb-6 flex items-center justify-center min-h-[350px]">
+                        <canvas id="qr-canvas" style="display: none;"></canvas>
+                        <div id="preview-placeholder" class="text-center text-gray-400">
+                            <svg class="w-24 h-24 mx-auto mb-4 opacity-20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"></path>
+                            </svg>
+                            <p>Digite uma URL para ver o preview</p>
                         </div>
                     </div>
 
-                    <div class="bg-slate-900 p-4 rounded-lg mb-6 no-print">
-                        <label class="block text-sm font-medium mb-2">Link Curto</label>
-                        <div class="flex gap-2">
-                            <input 
-                                type="text" 
-                                id="short-url" 
-                                readonly 
-                                class="flex-1 px-4 py-2 bg-slate-800 border border-slate-600 rounded-lg text-white"
-                            >
-                            <button 
-                                onclick="copyUrl()" 
-                                class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg transition-colors"
-                            >
-                                📋 Copiar
-                            </button>
-                        </div>
-                    </div>
-
-                    <div class="grid md:grid-cols-2 gap-4 mb-4 no-print">
+                    <div id="action-buttons" class="hidden space-y-3">
                         <button 
                             onclick="downloadQRCode()" 
-                            class="bg-green-600 hover:bg-green-700 py-3 rounded-lg font-semibold flex items-center justify-center gap-2"
+                            class="w-full bg-green-600 hover:bg-green-700 py-3 rounded-lg font-semibold flex items-center justify-center gap-2"
                         >
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
@@ -153,30 +238,21 @@
                         </button>
                         <button 
                             onclick="printQRCode()" 
-                            class="bg-purple-600 hover:bg-purple-700 py-3 rounded-lg font-semibold flex items-center justify-center gap-2"
+                            class="w-full bg-purple-600 hover:bg-purple-700 py-3 rounded-lg font-semibold flex items-center justify-center gap-2"
                         >
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path>
                             </svg>
                             Imprimir
                         </button>
-                    </div>
-
-                    <div class="grid md:grid-cols-2 gap-4 no-print">
                         <button 
                             onclick="shareQRCode()" 
-                            class="bg-blue-600 hover:bg-blue-700 py-3 rounded-lg font-semibold flex items-center justify-center gap-2"
+                            class="w-full bg-blue-600 hover:bg-blue-700 py-3 rounded-lg font-semibold flex items-center justify-center gap-2"
                         >
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"></path>
                             </svg>
                             Compartilhar
-                        </button>
-                        <button 
-                            onclick="location.reload()" 
-                            class="bg-slate-700 hover:bg-slate-600 py-3 rounded-lg font-semibold"
-                        >
-                            ➕ Criar Outro
                         </button>
                     </div>
                 </div>
@@ -185,6 +261,7 @@
         </div>
     </main>
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
     <script>
         const supabase = window.supabase.createClient(
             'https://ysyarhpqpslfehzcrtom.supabase.co',
@@ -196,8 +273,9 @@
         let currentUserName = null;
         let currentLinkName = '';
         let currentShortUrl = '';
+        let logoImage = null;
 
-        // Verificar se está logado
+        // Verificar login
         supabase.auth.getSession().then(({ data: { session } }) => {
             if (!session) {
                 window.location.href = 'index.html';
@@ -217,6 +295,94 @@
             return Math.random().toString(36).substring(2, 8) + Date.now().toString(36);
         }
 
+        // Sincronizar color pickers
+        document.getElementById('qr-color').addEventListener('input', (e) => {
+            document.getElementById('qr-color-text').value = e.target.value;
+        });
+        document.getElementById('bg-color').addEventListener('input', (e) => {
+            document.getElementById('bg-color-text').value = e.target.value;
+        });
+
+        function applyPreset(qrColor, bgColor) {
+            document.getElementById('qr-color').value = qrColor;
+            document.getElementById('qr-color-text').value = qrColor;
+            document.getElementById('bg-color').value = bgColor;
+            document.getElementById('bg-color-text').value = bgColor;
+            updatePreview();
+        }
+
+        function handleLogoUpload(event) {
+            const file = event.target.files[0];
+            if (file) {
+                if (file.size > 2 * 1024 * 1024) {
+                    alert('⚠️ Arquivo muito grande! Máximo 2MB');
+                    return;
+                }
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const img = new Image();
+                    img.onload = () => {
+                        logoImage = img;
+                        updatePreview();
+                    };
+                    img.src = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function updatePreview() {
+            const url = document.getElementById('destination-url').value;
+            if (!url) {
+                document.getElementById('qr-canvas').style.display = 'none';
+                document.getElementById('preview-placeholder').style.display = 'block';
+                return;
+            }
+
+            const qrColor = document.getElementById('qr-color').value;
+            const bgColor = document.getElementById('bg-color').value;
+            
+            document.getElementById('preview-placeholder').style.display = 'none';
+            document.getElementById('qr-canvas').style.display = 'block';
+
+            generateCustomQR(url, qrColor, bgColor, logoImage);
+        }
+
+        function generateCustomQR(text, foreground, background, logo) {
+            const canvas = document.getElementById('qr-canvas');
+            const size = 300;
+            
+            // Criar QR Code temporário para obter os dados
+            const tempQR = new QRious({
+                value: text,
+                size: size,
+                foreground: foreground,
+                background: background,
+                level: 'H'
+            });
+
+            canvas.width = size;
+            canvas.height = size;
+            const ctx = canvas.getContext('2d');
+
+            // Desenhar QR Code
+            ctx.drawImage(tempQR.image, 0, 0);
+
+            // Adicionar logo se existir [web:94][web:102]
+            if (logo) {
+                const logoSize = size * 0.25;
+                const logoX = (size - logoSize) / 2;
+                const logoY = (size - logoSize) / 2;
+                
+                // Fundo branco atrás do logo
+                ctx.fillStyle = background;
+                ctx.fillRect(logoX - 10, logoY - 10, logoSize + 20, logoSize + 20);
+                
+                // Desenhar logo
+                ctx.drawImage(logo, logoX, logoY, logoSize, logoSize);
+            }
+        }
+
         document.getElementById('qr-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             
@@ -228,6 +394,9 @@
             const linkName = document.getElementById('link-name').value || 'Sem nome';
             const slug = generateSlug();
 
+            const qrColor = document.getElementById('qr-color').value;
+            const bgColor = document.getElementById('bg-color').value;
+
             try {
                 const { data, error } = await supabase
                     .from('qr_links')
@@ -235,7 +404,9 @@
                         slug: slug,
                         destination_url: destinationUrl,
                         link_name: linkName,
-                        user_email: currentUserEmail
+                        user_email: currentUserEmail,
+                        qr_color: qrColor,
+                        bg_color: bgColor
                     }])
                     .select();
 
@@ -244,45 +415,26 @@
                 currentSlug = slug;
                 currentLinkName = linkName;
                 currentShortUrl = `${window.location.origin}/redirect.html?id=${slug}`;
-                
-                document.getElementById('short-url').value = currentShortUrl;
-                document.getElementById('print-link-name').textContent = linkName;
-                document.getElementById('print-short-url').textContent = currentShortUrl;
-                
-                const qrContainer = document.getElementById('qrcode-container');
-                qrContainer.innerHTML = '';
-                
-                new QRCode(qrContainer, {
-                    text: currentShortUrl,
-                    width: 256,
-                    height: 256,
-                    colorDark: '#000000',
-                    colorLight: '#ffffff',
-                    correctLevel: QRCode.CorrectLevel.H
-                });
 
-                document.getElementById('form-section').classList.add('hidden');
-                document.getElementById('qr-section').classList.remove('hidden');
+                // Gerar QR Code final
+                generateCustomQR(currentShortUrl, qrColor, bgColor, logoImage);
+                
+                document.getElementById('action-buttons').classList.remove('hidden');
+                alert('✅ QR Code criado com sucesso!');
 
             } catch (error) {
                 alert('❌ Erro: ' + error.message);
+            } finally {
                 submitBtn.disabled = false;
                 submitBtn.textContent = '🎨 Gerar QR Code';
             }
         });
 
-        function copyUrl() {
-            const urlInput = document.getElementById('short-url');
-            urlInput.select();
-            navigator.clipboard.writeText(urlInput.value);
-            alert('✅ Link copiado!');
-        }
-
         function downloadQRCode() {
-            const canvas = document.querySelector('#qrcode-container canvas');
+            const canvas = document.getElementById('qr-canvas');
             const image = canvas.toDataURL('image/png');
             const link = document.createElement('a');
-            link.download = `qrcode-${currentSlug}.png`;
+            link.download = `qrcode-${currentSlug || 'custom'}.png`;
             link.href = image;
             link.click();
         }
@@ -296,18 +448,18 @@
                 try {
                     await navigator.share({
                         title: `QR Code - ${currentLinkName}`,
-                        text: `Confira meu QR Code dinâmico: ${currentLinkName}`,
+                        text: `Confira meu QR Code: ${currentLinkName}`,
                         url: currentShortUrl
                     });
-                    console.log('✅ Compartilhado com sucesso!');
                 } catch (error) {
                     if (error.name !== 'AbortError') {
-                        copyUrl();
+                        navigator.clipboard.writeText(currentShortUrl);
+                        alert('📋 Link copiado!');
                     }
                 }
             } else {
-                copyUrl();
-                alert('📋 Link copiado! (Compartilhamento não suportado neste navegador)');
+                navigator.clipboard.writeText(currentShortUrl);
+                alert('📋 Link copiado!');
             }
         }
     </script>
