@@ -6,7 +6,6 @@
     <title>Criar QR Code - QRDynamic</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.3/dist/umd/supabase.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <style>
         body { background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); }
         .gradient-text {
@@ -128,14 +127,14 @@
                                                 type="color" 
                                                 id="qr-color" 
                                                 value="#000000"
-                                                oninput="updatePreview()"
+                                                oninput="syncColorPicker('qr'); updatePreview();"
                                                 class="color-picker"
                                             >
                                             <input 
                                                 type="text" 
                                                 id="qr-color-text"
                                                 value="#000000"
-                                                oninput="document.getElementById('qr-color').value = this.value; updatePreview();"
+                                                oninput="syncColorText('qr'); updatePreview();"
                                                 class="flex-1 px-3 py-2 bg-slate-900 border border-slate-600 rounded-lg text-sm text-white"
                                             >
                                         </div>
@@ -148,14 +147,14 @@
                                                 type="color" 
                                                 id="bg-color" 
                                                 value="#ffffff"
-                                                oninput="updatePreview()"
+                                                oninput="syncColorPicker('bg'); updatePreview();"
                                                 class="color-picker"
                                             >
                                             <input 
                                                 type="text" 
                                                 id="bg-color-text"
                                                 value="#ffffff"
-                                                oninput="document.getElementById('bg-color').value = this.value; updatePreview();"
+                                                oninput="syncColorText('bg'); updatePreview();"
                                                 class="flex-1 px-3 py-2 bg-slate-900 border border-slate-600 rounded-lg text-sm text-white"
                                             >
                                         </div>
@@ -179,22 +178,22 @@
                                 <div class="mt-4">
                                     <label class="block text-sm font-medium mb-2">Presets Rápidos</label>
                                     <div class="flex gap-2 flex-wrap">
-                                        <button type="button" onclick="applyPreset('#000000', '#ffffff')" class="w-10 h-10 rounded-lg border-2 border-slate-600 bg-white relative overflow-hidden">
+                                        <button type="button" onclick="applyPreset('#000000', '#ffffff')" class="w-10 h-10 rounded-lg border-2 border-slate-600 bg-white relative overflow-hidden" title="Clássico">
                                             <div class="absolute inset-0 bg-black" style="clip-path: polygon(0 0, 100% 0, 0 100%);"></div>
                                         </button>
-                                        <button type="button" onclick="applyPreset('#3b82f6', '#ffffff')" class="w-10 h-10 rounded-lg border-2 border-slate-600 bg-white relative overflow-hidden">
+                                        <button type="button" onclick="applyPreset('#3b82f6', '#ffffff')" class="w-10 h-10 rounded-lg border-2 border-slate-600 bg-white relative overflow-hidden" title="Azul">
                                             <div class="absolute inset-0 bg-blue-500" style="clip-path: polygon(0 0, 100% 0, 0 100%);"></div>
                                         </button>
-                                        <button type="button" onclick="applyPreset('#10b981', '#ffffff')" class="w-10 h-10 rounded-lg border-2 border-slate-600 bg-white relative overflow-hidden">
+                                        <button type="button" onclick="applyPreset('#10b981', '#ffffff')" class="w-10 h-10 rounded-lg border-2 border-slate-600 bg-white relative overflow-hidden" title="Verde">
                                             <div class="absolute inset-0 bg-green-500" style="clip-path: polygon(0 0, 100% 0, 0 100%);"></div>
                                         </button>
-                                        <button type="button" onclick="applyPreset('#8b5cf6', '#ffffff')" class="w-10 h-10 rounded-lg border-2 border-slate-600 bg-white relative overflow-hidden">
+                                        <button type="button" onclick="applyPreset('#8b5cf6', '#ffffff')" class="w-10 h-10 rounded-lg border-2 border-slate-600 bg-white relative overflow-hidden" title="Roxo">
                                             <div class="absolute inset-0 bg-purple-500" style="clip-path: polygon(0 0, 100% 0, 0 100%);"></div>
                                         </button>
-                                        <button type="button" onclick="applyPreset('#ef4444', '#ffffff')" class="w-10 h-10 rounded-lg border-2 border-slate-600 bg-white relative overflow-hidden">
+                                        <button type="button" onclick="applyPreset('#ef4444', '#ffffff')" class="w-10 h-10 rounded-lg border-2 border-slate-600 bg-white relative overflow-hidden" title="Vermelho">
                                             <div class="absolute inset-0 bg-red-500" style="clip-path: polygon(0 0, 100% 0, 0 100%);"></div>
                                         </button>
-                                        <button type="button" onclick="applyPreset('#ffffff', '#000000')" class="w-10 h-10 rounded-lg border-2 border-slate-600 bg-black relative overflow-hidden">
+                                        <button type="button" onclick="applyPreset('#ffffff', '#000000')" class="w-10 h-10 rounded-lg border-2 border-slate-600 bg-black relative overflow-hidden" title="Invertido">
                                             <div class="absolute inset-0 bg-white" style="clip-path: polygon(0 0, 100% 0, 0 100%);"></div>
                                         </button>
                                     </div>
@@ -254,6 +253,12 @@
                             </svg>
                             Compartilhar
                         </button>
+                        <button 
+                            onclick="location.reload()" 
+                            class="w-full bg-slate-700 hover:bg-slate-600 py-3 rounded-lg font-semibold"
+                        >
+                            ➕ Criar Outro
+                        </button>
                     </div>
                 </div>
 
@@ -261,7 +266,7 @@
         </div>
     </main>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
+    <script src="https://cdn.rawgit.com/davidshimjs/qrcodejs/gh-pages/qrcode.min.js"></script>
     <script>
         const supabase = window.supabase.createClient(
             'https://ysyarhpqpslfehzcrtom.supabase.co',
@@ -274,6 +279,7 @@
         let currentLinkName = '';
         let currentShortUrl = '';
         let logoImage = null;
+        let qrCodeInstance = null;
 
         // Verificar login
         supabase.auth.getSession().then(({ data: { session } }) => {
@@ -295,13 +301,19 @@
             return Math.random().toString(36).substring(2, 8) + Date.now().toString(36);
         }
 
-        // Sincronizar color pickers
-        document.getElementById('qr-color').addEventListener('input', (e) => {
-            document.getElementById('qr-color-text').value = e.target.value;
-        });
-        document.getElementById('bg-color').addEventListener('input', (e) => {
-            document.getElementById('bg-color-text').value = e.target.value;
-        });
+        function syncColorPicker(type) {
+            const picker = document.getElementById(`${type}-color`);
+            const text = document.getElementById(`${type}-color-text`);
+            text.value = picker.value;
+        }
+
+        function syncColorText(type) {
+            const picker = document.getElementById(`${type}-color`);
+            const text = document.getElementById(`${type}-color-text`);
+            if (/^#[0-9A-F]{6}$/i.test(text.value)) {
+                picker.value = text.value;
+            }
+        }
 
         function applyPreset(qrColor, bgColor) {
             document.getElementById('qr-color').value = qrColor;
@@ -316,6 +328,7 @@
             if (file) {
                 if (file.size > 2 * 1024 * 1024) {
                     alert('⚠️ Arquivo muito grande! Máximo 2MB');
+                    event.target.value = '';
                     return;
                 }
                 const reader = new FileReader();
@@ -343,44 +356,61 @@
             const bgColor = document.getElementById('bg-color').value;
             
             document.getElementById('preview-placeholder').style.display = 'none';
-            document.getElementById('qr-canvas').style.display = 'block';
-
-            generateCustomQR(url, qrColor, bgColor, logoImage);
+            
+            generateQRWithColors(url, qrColor, bgColor);
         }
 
-        function generateCustomQR(text, foreground, background, logo) {
+        function generateQRWithColors(text, colorDark, colorLight) {
             const canvas = document.getElementById('qr-canvas');
-            const size = 300;
+            const container = document.getElementById('preview-container');
             
-            // Criar QR Code temporário para obter os dados
-            const tempQR = new QRious({
-                value: text,
-                size: size,
-                foreground: foreground,
-                background: background,
-                level: 'H'
+            // Limpar canvas anterior
+            const ctx = canvas.getContext('2d');
+            canvas.width = 300;
+            canvas.height = 300;
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Criar div temporária
+            const tempDiv = document.createElement('div');
+            tempDiv.style.position = 'absolute';
+            tempDiv.style.left = '-9999px';
+            document.body.appendChild(tempDiv);
+
+            // Gerar QR Code
+            new QRCode(tempDiv, {
+                text: text,
+                width: 300,
+                height: 300,
+                colorDark: colorDark,
+                colorLight: colorLight,
+                correctLevel: QRCode.CorrectLevel.H
             });
 
-            canvas.width = size;
-            canvas.height = size;
-            const ctx = canvas.getContext('2d');
-
-            // Desenhar QR Code
-            ctx.drawImage(tempQR.image, 0, 0);
-
-            // Adicionar logo se existir [web:94][web:102]
-            if (logo) {
-                const logoSize = size * 0.25;
-                const logoX = (size - logoSize) / 2;
-                const logoY = (size - logoSize) / 2;
-                
-                // Fundo branco atrás do logo
-                ctx.fillStyle = background;
-                ctx.fillRect(logoX - 10, logoY - 10, logoSize + 20, logoSize + 20);
-                
-                // Desenhar logo
-                ctx.drawImage(logo, logoX, logoY, logoSize, logoSize);
-            }
+            // Aguardar geração
+            setTimeout(() => {
+                const tempCanvas = tempDiv.querySelector('canvas');
+                if (tempCanvas) {
+                    // Desenhar no canvas principal
+                    ctx.drawImage(tempCanvas, 0, 0);
+                    
+                    // Adicionar logo se existir
+                    if (logoImage) {
+                        const logoSize = canvas.width * 0.25;
+                        const logoX = (canvas.width - logoSize) / 2;
+                        const logoY = (canvas.height - logoSize) / 2;
+                        
+                        // Fundo branco atrás do logo
+                        ctx.fillStyle = colorLight;
+                        ctx.fillRect(logoX - 10, logoY - 10, logoSize + 20, logoSize + 20);
+                        
+                        // Desenhar logo
+                        ctx.drawImage(logoImage, logoX, logoY, logoSize, logoSize);
+                    }
+                    
+                    canvas.style.display = 'block';
+                }
+                document.body.removeChild(tempDiv);
+            }, 100);
         }
 
         document.getElementById('qr-form').addEventListener('submit', async (e) => {
@@ -416,8 +446,8 @@
                 currentLinkName = linkName;
                 currentShortUrl = `${window.location.origin}/redirect.html?id=${slug}`;
 
-                // Gerar QR Code final
-                generateCustomQR(currentShortUrl, qrColor, bgColor, logoImage);
+                // Gerar QR Code final com o link curto
+                generateQRWithColors(currentShortUrl, qrColor, bgColor);
                 
                 document.getElementById('action-buttons').classList.remove('hidden');
                 alert('✅ QR Code criado com sucesso!');
@@ -444,7 +474,7 @@
         }
 
         async function shareQRCode() {
-            if (navigator.share) {
+            if (navigator.share && currentShortUrl) {
                 try {
                     await navigator.share({
                         title: `QR Code - ${currentLinkName}`,
@@ -458,7 +488,7 @@
                     }
                 }
             } else {
-                navigator.clipboard.writeText(currentShortUrl);
+                navigator.clipboard.writeText(currentShortUrl || document.getElementById('destination-url').value);
                 alert('📋 Link copiado!');
             }
         }
