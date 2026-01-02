@@ -120,6 +120,19 @@
                         class="w-full px-4 py-3 bg-slate-900 border border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-white"
                     >
                 </div>
+                <div>
+                    <label class="block text-sm font-medium mb-2">Data de Expiração (opcional)</label>
+                    <input 
+                        type="datetime-local" 
+                        id="edit-expires" 
+                        class="w-full px-4 py-3 bg-slate-900 border border-slate-600 rounded-lg focus:ring-2 focus:ring-orange-500 outline-none text-white"
+                    >
+                    <div class="flex gap-2 mt-2">
+                        <button type="button" onclick="setEditExpiry(7)" class="text-xs bg-slate-700 hover:bg-slate-600 px-3 py-1 rounded">+ 7 dias</button>
+                        <button type="button" onclick="setEditExpiry(30)" class="text-xs bg-slate-700 hover:bg-slate-600 px-3 py-1 rounded">+ 30 dias</button>
+                        <button type="button" onclick="clearEditExpiry()" class="text-xs bg-red-600 hover:bg-red-700 px-3 py-1 rounded">Limpar</button>
+                    </div>
+                </div>
                 <div class="flex gap-3">
                     <button 
                         type="submit" 
@@ -175,6 +188,42 @@
             }
         }
 
+        function getExpiryBadge(expiresAt) {
+            if (!expiresAt) {
+                return '<span class="px-2 py-1 bg-green-600/20 text-green-400 rounded text-xs font-medium">✓ Permanente</span>';
+            }
+
+            const now = new Date();
+            const expiry = new Date(expiresAt);
+            const isExpired = now > expiry;
+
+            if (isExpired) {
+                return '<span class="px-2 py-1 bg-red-600/20 text-red-400 rounded text-xs font-medium">⏰ Expirado</span>';
+            }
+
+            const diffTime = expiry - now;
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+            if (diffDays <= 3) {
+                return `<span class="px-2 py-1 bg-orange-600/20 text-orange-400 rounded text-xs font-medium">⚠️ Expira em ${diffDays}d</span>`;
+            }
+
+            return `<span class="px-2 py-1 bg-blue-600/20 text-blue-400 rounded text-xs font-medium">⏰ ${diffDays} dias</span>`;
+        }
+
+        function formatExpiry(expiresAt) {
+            if (!expiresAt) return '';
+            
+            const date = new Date(expiresAt);
+            return date.toLocaleString('pt-BR', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
+
         async function loadLinks() {
             try {
                 const { data, error } = await supabase
@@ -195,15 +244,23 @@
                 }
 
                 emptyState.classList.add('hidden');
-                container.innerHTML = data.map(link => `
+                container.innerHTML = data.map(link => {
+                    const expiryBadge = getExpiryBadge(link.expires_at);
+                    const expiryText = link.expires_at ? `⏰ Expira: ${formatExpiry(link.expires_at)}` : '';
+                    
+                    return `
                     <div class="bg-slate-800/50 rounded-xl p-6 border border-slate-700 hover:border-slate-600 transition-colors">
                         <div class="flex flex-col gap-4">
                             <div class="flex-1">
-                                <h3 class="text-xl font-bold mb-2">${link.link_name}</h3>
+                                <div class="flex items-center gap-3 mb-2">
+                                    <h3 class="text-xl font-bold">${link.link_name}</h3>
+                                    ${expiryBadge}
+                                </div>
                                 <p class="text-sm text-gray-400 mb-2 break-all">${link.destination_url}</p>
-                                <div class="flex gap-4 text-sm text-gray-500">
+                                <div class="flex flex-wrap gap-4 text-sm text-gray-500">
                                     <span>👁️ ${link.clicks || 0} cliques</span>
                                     <span>📅 ${new Date(link.created_at).toLocaleDateString('pt-BR')}</span>
+                                    ${expiryText ? `<span>${expiryText}</span>` : ''}
                                 </div>
                             </div>
                             <div class="flex flex-wrap gap-2">
@@ -222,21 +279,21 @@
                                     📤 Compartilhar
                                 </button>
                                 <button 
-                                    onclick="downloadQR('${link.slug}', '${link.link_name.replace(/'/g, "\\'")}')" 
+                                    onclick="downloadQR('${link.slug}', '${link.link_name.replace(/'/g, "\\'")}', '${link.qr_color || '#000000'}', '${link.bg_color || '#ffffff'}')" 
                                     class="bg-green-600 hover:bg-green-700 px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-1"
                                     title="Baixar QR"
                                 >
                                     💾 Baixar
                                 </button>
                                 <button 
-                                    onclick="printQR('${link.slug}', '${link.link_name.replace(/'/g, "\\'")}', '${link.destination_url}')" 
+                                    onclick="printQR('${link.slug}', '${link.link_name.replace(/'/g, "\\'")}', '${link.destination_url}', '${link.qr_color || '#000000'}', '${link.bg_color || '#ffffff'}')" 
                                     class="bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-1"
                                     title="Imprimir"
                                 >
                                     🖨️ Imprimir
                                 </button>
                                 <button 
-                                    onclick="openEditModal('${link.slug}', \`${link.link_name}\`, \`${link.destination_url}\`)" 
+                                    onclick="openEditModal('${link.slug}', \`${link.link_name}\`, \`${link.destination_url}\`, '${link.expires_at || ''}')" 
                                     class="bg-yellow-600 hover:bg-yellow-700 px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-1"
                                     title="Editar"
                                 >
@@ -252,7 +309,7 @@
                             </div>
                         </div>
                     </div>
-                `).join('');
+                `}).join('');
 
             } catch (error) {
                 alert('Erro ao carregar: ' + error.message);
@@ -274,7 +331,6 @@
                         text: `Confira meu QR Code: ${name}\nDestino: ${destinationUrl}`,
                         url: url
                     });
-                    console.log('✅ Compartilhado com sucesso!');
                 } catch (error) {
                     if (error.name !== 'AbortError') {
                         copyLinkUrl(slug);
@@ -286,7 +342,7 @@
             }
         }
 
-        function downloadQR(slug, name) {
+        function downloadQR(slug, name, qrColor, bgColor) {
             const url = `${window.location.origin}/redirect.html?id=${slug}`;
             const tempDiv = document.createElement('div');
             tempDiv.style.position = 'absolute';
@@ -297,8 +353,8 @@
                 text: url,
                 width: 512,
                 height: 512,
-                colorDark: '#000000',
-                colorLight: '#ffffff',
+                colorDark: qrColor,
+                colorLight: bgColor,
                 correctLevel: QRCode.CorrectLevel.H
             });
 
@@ -313,7 +369,7 @@
             }, 100);
         }
 
-        function printQR(slug, name, destinationUrl) {
+        function printQR(slug, name, destinationUrl, qrColor, bgColor) {
             const url = `${window.location.origin}/redirect.html?id=${slug}`;
             
             document.getElementById('print-qr-name').textContent = name;
@@ -326,8 +382,8 @@
                 text: url,
                 width: 256,
                 height: 256,
-                colorDark: '#000000',
-                colorLight: '#ffffff',
+                colorDark: qrColor,
+                colorLight: bgColor,
                 correctLevel: QRCode.CorrectLevel.H
             });
 
@@ -338,10 +394,32 @@
             }, 100);
         }
 
-        function openEditModal(slug, name, url) {
+        function formatDateTimeLocal(date) {
+            if (!date) return '';
+            const d = new Date(date);
+            const year = d.getFullYear();
+            const month = String(d.getMonth() + 1).padStart(2, '0');
+            const day = String(d.getDate()).padStart(2, '0');
+            const hours = String(d.getHours()).padStart(2, '0');
+            const minutes = String(d.getMinutes()).padStart(2, '0');
+            return `${year}-${month}-${day}T${hours}:${minutes}`;
+        }
+
+        function setEditExpiry(days) {
+            const date = new Date();
+            date.setDate(date.getDate() + days);
+            document.getElementById('edit-expires').value = formatDateTimeLocal(date);
+        }
+
+        function clearEditExpiry() {
+            document.getElementById('edit-expires').value = '';
+        }
+
+        function openEditModal(slug, name, url, expiresAt) {
             currentEditSlug = slug;
             document.getElementById('edit-name').value = name;
             document.getElementById('edit-url').value = url;
+            document.getElementById('edit-expires').value = expiresAt ? formatDateTimeLocal(expiresAt) : '';
             document.getElementById('edit-modal').classList.remove('hidden');
         }
 
@@ -353,11 +431,15 @@
             e.preventDefault();
             
             try {
+                const expiresInput = document.getElementById('edit-expires').value;
+                const expiresAt = expiresInput ? new Date(expiresInput).toISOString() : null;
+
                 const { error } = await supabase
                     .from('qr_links')
                     .update({ 
                         link_name: document.getElementById('edit-name').value, 
-                        destination_url: document.getElementById('edit-url').value 
+                        destination_url: document.getElementById('edit-url').value,
+                        expires_at: expiresAt
                     })
                     .eq('slug', currentEditSlug);
 
