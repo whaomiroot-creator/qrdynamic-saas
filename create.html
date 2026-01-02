@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Criar QR Code - QRDynamic</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.3/dist/umd/supabase.min.js"></script>
+    <style>
+        body { background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); }
+        .gradient-text {
+            background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .card-hover { transition: transform 0.3s ease, box-shadow 0.3s ease; }
+        .card-hover:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(59, 130, 246, 0.3);
+        }
+        #qrcode-container canvas, #qrcode-container img {
+            border-radius: 1rem;
+            margin: 0 auto;
+        }
+    </style>
+</head>
+<body class="min-h-screen text-gray-100">
+    
+    <header class="container mx-auto px-4 py-6">
+        <nav class="flex justify-between items-center">
+            <div class="flex items-center space-x-2">
+                <svg class="w-8 h-8 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"></path>
+                </svg>
+                <span class="text-xl font-bold">QRDynamic</span>
+            </div>
+            <div class="flex items-center gap-3">
+                <span class="text-sm text-gray-400 hidden md:block">Olá, <span id="user-name-header" class="font-semibold text-white"></span></span>
+                <a href="admin.html" class="bg-slate-700 hover:bg-slate-600 px-4 py-2 rounded-lg transition-colors text-sm font-medium">
+                    📂 Meus QR Codes
+                </a>
+                <button 
+                    onclick="logout()" 
+                    class="bg-red-600 hover:bg-red-700 px-4 py-2 rounded-lg transition-colors text-sm font-medium"
+                >
+                    🚪 Sair
+                </button>
+            </div>
+        </nav>
+    </header>
+
+    <main class="container mx-auto px-4 py-12">
+        <div class="text-center mb-12">
+            <h1 class="text-4xl md:text-6xl font-bold mb-4">
+                QR Codes <span class="gradient-text">Dinâmicos</span>
+            </h1>
+            <p class="text-xl text-gray-400 max-w-2xl mx-auto">
+                Crie QR Codes que você pode editar depois de imprimir!
+            </p>
+        </div>
+
+        <div class="max-w-4xl mx-auto">
+            <div class="bg-slate-800/50 backdrop-blur-lg rounded-2xl shadow-2xl p-8 card-hover border border-slate-700">
+                
+                <div id="form-section">
+                    <h2 class="text-2xl font-bold mb-6 text-center">Criar Novo QR Code</h2>
+                    
+                    <form id="qr-form" class="space-y-6">
+                        <div>
+                            <label class="block text-sm font-medium mb-2">URL de Destino</label>
+                            <input 
+                                type="url" 
+                                id="destination-url" 
+                                placeholder="https://seusite.com.br" 
+                                required
+                                class="w-full px-4 py-3 bg-slate-900 border border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-white"
+                            >
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium mb-2">Nome do Link (opcional)</label>
+                            <input 
+                                type="text" 
+                                id="link-name" 
+                                placeholder="Ex: Instagram, WhatsApp, Site Principal" 
+                                class="w-full px-4 py-3 bg-slate-900 border border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-white"
+                            >
+                        </div>
+
+                        <button 
+                            type="submit" 
+                            class="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 py-4 rounded-lg font-semibold text-lg transition-all shadow-lg"
+                        >
+                            🎨 Gerar QR Code
+                        </button>
+                    </form>
+                </div>
+
+                <div id="qr-section" class="hidden">
+                    <div class="text-center mb-6">
+                        <h2 class="text-2xl font-bold mb-2">🎉 QR Code Criado!</h2>
+                        <p class="text-gray-400">Seu QR Code dinâmico está pronto</p>
+                    </div>
+
+                    <div class="bg-white p-8 rounded-2xl mb-6">
+                        <div id="qrcode-container" class="flex justify-center"></div>
+                    </div>
+
+                    <div class="bg-slate-900 p-4 rounded-lg mb-6">
+                        <label class="block text-sm font-medium mb-2">Link Curto</label>
+                        <div class="flex gap-2">
+                            <input 
+                                type="text" 
+                                id="short-url" 
+                                readonly 
+                                class="flex-1 px-4 py-2 bg-slate-800 border border-slate-600 rounded-lg text-white"
+                            >
+                            <button 
+                                onclick="copyUrl()" 
+                                class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg transition-colors"
+                            >
+                                📋 Copiar
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="grid md:grid-cols-2 gap-4">
+                        <button 
+                            onclick="downloadQRCode()" 
+                            class="bg-green-600 hover:bg-green-700 py-3 rounded-lg font-semibold"
+                        >
+                            📥 Download PNG
+                        </button>
+                        <button 
+                            onclick="location.reload()" 
+                            class="bg-slate-700 hover:bg-slate-600 py-3 rounded-lg font-semibold"
+                        >
+                            ➕ Criar Outro
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </main>
+
+    <script>
+        const supabase = window.supabase.createClient(
+            'https://ysyarhpqpslfehzcrtom.supabase.co',
+            'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlzeWFyaHBxcHNsZmVoemNydG9tIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjcyMTg2NDcsImV4cCI6MjA4Mjc5NDY0N30.A2eXYvLaOPVszW2jsAy5OzPOYt6gQF2iUp8XSjyljPM'
+        );
+
+        let currentSlug = null;
+        let currentUserEmail = null;
+        let currentUserName = null;
+
+        // Verificar se está logado
+        supabase.auth.getSession().then(({ data: { session } }) => {
+            if (!session) {
+                window.location.href = 'index.html';
+            } else {
+                currentUserEmail = session.user.email;
+                currentUserName = session.user.user_metadata?.full_name || session.user.email.split('@')[0];
+                document.getElementById('user-name-header').textContent = currentUserName;
+            }
+        });
+
+        async function logout() {
+            await supabase.auth.signOut();
+            window.location.href = 'index.html';
+        }
+
+        function generateSlug() {
+            return Math.random().toString(36).substring(2, 8) + Date.now().toString(36);
+        }
+
+        document.getElementById('qr-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const submitBtn = e.target.querySelector('button[type="submit"]');
+            submitBtn.disabled = true;
+            submitBtn.textContent = '⏳ Gerando...';
+
+            const destinationUrl = document.getElementById('destination-url').value;
+            const linkName = document.getElementById('link-name').value || 'Sem nome';
+            const slug = generateSlug();
+
+            try {
+                const { data, error } = await supabase
+                    .from('qr_links')
+                    .insert([{
+                        slug: slug,
+                        destination_url: destinationUrl,
+                        link_name: linkName,
+                        user_email: currentUserEmail
+                    }])
+                    .select();
+
+                if (error) throw error;
+
+                currentSlug = slug;
+                const shortUrl = `${window.location.origin}/redirect.html?id=${slug}`;
+                
+                document.getElementById('short-url').value = shortUrl;
+                
+                const qrContainer = document.getElementById('qrcode-container');
+                qrContainer.innerHTML = '';
+                
+                new QRCode(qrContainer, {
+                    text: shortUrl,
+                    width: 256,
+                    height: 256,
+                    colorDark: '#000000',
+                    colorLight: '#ffffff',
+                    correctLevel: QRCode.CorrectLevel.H
+                });
+
+                document.getElementById('form-section').classList.add('hidden');
+                document.getElementById('qr-section').classList.remove('hidden');
+
+            } catch (error) {
+                alert('❌ Erro: ' + error.message);
+                submitBtn.disabled = false;
+                submitBtn.textContent = '🎨 Gerar QR Code';
+            }
+        });
+
+        function copyUrl() {
+            const urlInput = document.getElementById('short-url');
+            urlInput.select();
+            navigator.clipboard.writeText(urlInput.value);
+            alert('✅ Link copiado!');
+        }
+
+        function downloadQRCode() {
+            const canvas = document.querySelector('#qrcode-container canvas');
+            const image = canvas.toDataURL('image/png');
+            const link = document.createElement('a');
+            link.download = `qrcode-${currentSlug}.png`;
+            link.href = image;
+            link.click();
+        }
+    </script>
+
+</body>
+</html>
