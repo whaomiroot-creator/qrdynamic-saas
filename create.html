@@ -115,6 +115,28 @@
                                 >
                             </div>
 
+                            <!-- NOVO: Data de Expiração -->
+                            <div>
+                                <label class="block text-sm font-medium mb-2 flex items-center gap-2">
+                                    <svg class="w-4 h-4 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    </svg>
+                                    Data de Expiração (opcional)
+                                </label>
+                                <input 
+                                    type="datetime-local" 
+                                    id="expires-at" 
+                                    class="w-full px-4 py-3 bg-slate-900 border border-slate-600 rounded-lg focus:ring-2 focus:ring-orange-500 outline-none text-white"
+                                >
+                                <p class="text-xs text-gray-500 mt-2">Deixe vazio para QR Code permanente</p>
+                                <div class="flex gap-2 mt-3">
+                                    <button type="button" onclick="setExpiry(7)" class="text-xs bg-slate-700 hover:bg-slate-600 px-3 py-1 rounded">+ 7 dias</button>
+                                    <button type="button" onclick="setExpiry(30)" class="text-xs bg-slate-700 hover:bg-slate-600 px-3 py-1 rounded">+ 30 dias</button>
+                                    <button type="button" onclick="setExpiry(90)" class="text-xs bg-slate-700 hover:bg-slate-600 px-3 py-1 rounded">+ 90 dias</button>
+                                    <button type="button" onclick="clearExpiry()" class="text-xs bg-red-600 hover:bg-red-700 px-3 py-1 rounded">Limpar</button>
+                                </div>
+                            </div>
+
                             <!-- Customização de Cores -->
                             <div class="border-t border-slate-700 pt-6">
                                 <h3 class="text-lg font-semibold mb-4">🎨 Personalização</h3>
@@ -279,7 +301,6 @@
         let currentLinkName = '';
         let currentShortUrl = '';
         let logoImage = null;
-        let qrCodeInstance = null;
 
         // Verificar login
         supabase.auth.getSession().then(({ data: { session } }) => {
@@ -299,6 +320,27 @@
 
         function generateSlug() {
             return Math.random().toString(36).substring(2, 8) + Date.now().toString(36);
+        }
+
+        // Funções de Expiração [web:108][web:111]
+        function setExpiry(days) {
+            const date = new Date();
+            date.setDate(date.getDate() + days);
+            const formatted = formatDateTimeLocal(date);
+            document.getElementById('expires-at').value = formatted;
+        }
+
+        function clearExpiry() {
+            document.getElementById('expires-at').value = '';
+        }
+
+        function formatDateTimeLocal(date) {
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            const hours = String(date.getHours()).padStart(2, '0');
+            const minutes = String(date.getMinutes()).padStart(2, '0');
+            return `${year}-${month}-${day}T${hours}:${minutes}`;
         }
 
         function syncColorPicker(type) {
@@ -362,21 +404,16 @@
 
         function generateQRWithColors(text, colorDark, colorLight) {
             const canvas = document.getElementById('qr-canvas');
-            const container = document.getElementById('preview-container');
-            
-            // Limpar canvas anterior
             const ctx = canvas.getContext('2d');
             canvas.width = 300;
             canvas.height = 300;
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             
-            // Criar div temporária
             const tempDiv = document.createElement('div');
             tempDiv.style.position = 'absolute';
             tempDiv.style.left = '-9999px';
             document.body.appendChild(tempDiv);
 
-            // Gerar QR Code
             new QRCode(tempDiv, {
                 text: text,
                 width: 300,
@@ -386,24 +423,19 @@
                 correctLevel: QRCode.CorrectLevel.H
             });
 
-            // Aguardar geração
             setTimeout(() => {
                 const tempCanvas = tempDiv.querySelector('canvas');
                 if (tempCanvas) {
-                    // Desenhar no canvas principal
                     ctx.drawImage(tempCanvas, 0, 0);
                     
-                    // Adicionar logo se existir
                     if (logoImage) {
                         const logoSize = canvas.width * 0.25;
                         const logoX = (canvas.width - logoSize) / 2;
                         const logoY = (canvas.height - logoSize) / 2;
                         
-                        // Fundo branco atrás do logo
                         ctx.fillStyle = colorLight;
                         ctx.fillRect(logoX - 10, logoY - 10, logoSize + 20, logoSize + 20);
                         
-                        // Desenhar logo
                         ctx.drawImage(logoImage, logoX, logoY, logoSize, logoSize);
                     }
                     
@@ -423,9 +455,12 @@
             const destinationUrl = document.getElementById('destination-url').value;
             const linkName = document.getElementById('link-name').value || 'Sem nome';
             const slug = generateSlug();
-
             const qrColor = document.getElementById('qr-color').value;
             const bgColor = document.getElementById('bg-color').value;
+            
+            // Pegar data de expiração
+            const expiresAtInput = document.getElementById('expires-at').value;
+            const expiresAt = expiresAtInput ? new Date(expiresAtInput).toISOString() : null;
 
             try {
                 const { data, error } = await supabase
@@ -436,7 +471,8 @@
                         link_name: linkName,
                         user_email: currentUserEmail,
                         qr_color: qrColor,
-                        bg_color: bgColor
+                        bg_color: bgColor,
+                        expires_at: expiresAt
                     }])
                     .select();
 
@@ -446,11 +482,16 @@
                 currentLinkName = linkName;
                 currentShortUrl = `${window.location.origin}/redirect.html?id=${slug}`;
 
-                // Gerar QR Code final com o link curto
                 generateQRWithColors(currentShortUrl, qrColor, bgColor);
                 
                 document.getElementById('action-buttons').classList.remove('hidden');
-                alert('✅ QR Code criado com sucesso!');
+                
+                if (expiresAt) {
+                    const expDate = new Date(expiresAt).toLocaleString('pt-BR');
+                    alert(`✅ QR Code criado com sucesso!\n⏰ Expira em: ${expDate}`);
+                } else {
+                    alert('✅ QR Code criado com sucesso!');
+                }
 
             } catch (error) {
                 alert('❌ Erro: ' + error.message);
