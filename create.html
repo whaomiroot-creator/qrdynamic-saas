@@ -168,6 +168,30 @@
                                 </div>
                             </div>
 
+                            <!-- NOVO: Limite de Cliques -->
+                            <div>
+                                <label class="block text-sm font-medium mb-2 flex items-center gap-2">
+                                    <svg class="w-4 h-4 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                                    </svg>
+                                    Limite de Cliques (opcional)
+                                </label>
+                                <input 
+                                    type="number" 
+                                    id="click-limit" 
+                                    min="1"
+                                    placeholder="Ex: 100, 500, 1000"
+                                    class="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-slate-900 border border-slate-600 rounded-lg focus:ring-2 focus:ring-cyan-500 outline-none text-white text-sm sm:text-base"
+                                >
+                                <p class="text-xs text-gray-500 mt-2">QR Code para de funcionar após X acessos</p>
+                                <div class="flex flex-wrap gap-2 mt-3">
+                                    <button type="button" onclick="setClickLimit(50)" class="text-xs bg-slate-700 hover:bg-slate-600 px-2.5 sm:px-3 py-1 rounded">50 cliques</button>
+                                    <button type="button" onclick="setClickLimit(100)" class="text-xs bg-slate-700 hover:bg-slate-600 px-2.5 sm:px-3 py-1 rounded">100 cliques</button>
+                                    <button type="button" onclick="setClickLimit(500)" class="text-xs bg-slate-700 hover:bg-slate-600 px-2.5 sm:px-3 py-1 rounded">500 cliques</button>
+                                    <button type="button" onclick="clearClickLimit()" class="text-xs bg-red-600 hover:bg-red-700 px-2.5 sm:px-3 py-1 rounded">Ilimitado</button>
+                                </div>
+                            </div>
+
                             <!-- Proteção por Senha -->
                             <div>
                                 <label class="block text-sm font-medium mb-2 flex items-center gap-2">
@@ -382,6 +406,15 @@
             document.getElementById('expires-at').value = '';
         }
 
+        // NOVO: Funções de Limite de Cliques
+        function setClickLimit(limit) {
+            document.getElementById('click-limit').value = limit;
+        }
+
+        function clearClickLimit() {
+            document.getElementById('click-limit').value = '';
+        }
+
         function formatDateTimeLocal(date) {
             const year = date.getFullYear();
             const month = String(date.getMonth() + 1).padStart(2, '0');
@@ -513,6 +546,10 @@
             // Pegar senha
             const password = document.getElementById('qr-password').value.trim() || null;
 
+            // NOVO: Pegar limite de cliques
+            const clickLimitInput = document.getElementById('click-limit').value;
+            const clickLimit = clickLimitInput ? parseInt(clickLimitInput) : null;
+
             try {
                 const { data, error } = await supabase
                     .from('qr_links')
@@ -524,7 +561,8 @@
                         qr_color: qrColor,
                         bg_color: bgColor,
                         expires_at: expiresAt,
-                        password: password
+                        password: password,
+                        click_limit: clickLimit
                     }])
                     .select();
 
@@ -539,19 +577,18 @@
                 document.getElementById('action-buttons').classList.remove('hidden');
                 
                 // Alert melhorado
-                if (expiresAt || password) {
-                    let message = '✅ QR Code criado com sucesso!';
-                    if (expiresAt) {
-                        const expDate = new Date(expiresAt).toLocaleString('pt-BR');
-                        message += `\n⏰ Expira em: ${expDate}`;
-                    }
-                    if (password) {
-                        message += `\n🔒 Protegido por senha`;
-                    }
-                    alert(message);
-                } else {
-                    alert('✅ QR Code criado com sucesso!');
+                let message = '✅ QR Code criado com sucesso!';
+                if (expiresAt) {
+                    const expDate = new Date(expiresAt).toLocaleString('pt-BR');
+                    message += `\n⏰ Expira em: ${expDate}`;
                 }
+                if (password) {
+                    message += `\n🔒 Protegido por senha`;
+                }
+                if (clickLimit) {
+                    message += `\n🔢 Limite: ${clickLimit} cliques`;
+                }
+                alert(message);
 
             } catch (error) {
                 alert('❌ Erro: ' + error.message);
