@@ -26,59 +26,77 @@
             }
             .no-print { display: none !important; }
         }
+
+        /* RESPONSIVO MOBILE */
+        @media (max-width: 768px) {
+            .qr-card {
+                padding: 1rem !important;
+            }
+            
+            h1 {
+                font-size: 1.875rem !important;
+            }
+        }
+
+        @media (max-width: 640px) {
+            .flex-wrap button {
+                flex: 1 1 calc(50% - 0.5rem);
+                min-width: 120px;
+            }
+        }
     </style>
 </head>
 <body class="min-h-screen text-gray-100">
     
-    <header class="container mx-auto px-4 py-6 no-print">
-        <nav class="flex justify-between items-center">
-            <div class="flex items-center space-x-2">
-                <svg class="w-8 h-8 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <header class="container mx-auto px-4 py-4 sm:py-6 no-print">
+        <nav class="flex flex-wrap justify-between items-center gap-3">
+            <a href="index.html" class="flex items-center space-x-2 hover:opacity-80 transition-opacity">
+                <svg class="w-6 h-6 sm:w-8 sm:h-8 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"></path>
                 </svg>
-                <span class="text-xl font-bold">QRDynamic</span>
-            </div>
-            <div class="flex items-center gap-3">
+                <span class="text-lg sm:text-xl font-bold">QRDynamic</span>
+            </a>
+            <div class="flex flex-wrap items-center gap-2 sm:gap-3">
                 <div class="hidden md:flex items-center gap-2">
                     <span class="text-sm text-gray-400">Olá,</span>
-                    <span class="font-semibold" id="user-name-header">Usuário</span>
+                    <span class="font-semibold text-sm" id="user-name-header">Usuário</span>
                 </div>
-                <a href="analytics.html" class="bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded-lg transition-colors text-sm font-medium">
-                    📊 Analytics
+                <a href="analytics.html" class="bg-purple-600 hover:bg-purple-700 px-3 py-2 sm:px-4 rounded-lg transition-colors text-xs sm:text-sm font-medium">
+                    📊 <span class="hidden sm:inline">Analytics</span>
                 </a>
-                <a href="create.html" class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg transition-colors text-sm font-medium">
-                    + Criar Novo
+                <a href="create.html" class="bg-blue-600 hover:bg-blue-700 px-3 py-2 sm:px-4 rounded-lg transition-colors text-xs sm:text-sm font-medium">
+                    + <span class="hidden sm:inline">Criar Novo</span><span class="sm:hidden">Novo</span>
                 </a>
                 <button 
                     onclick="logout()" 
-                    class="bg-red-600 hover:bg-red-700 px-4 py-2 rounded-lg transition-colors text-sm font-medium"
+                    class="bg-red-600 hover:bg-red-700 px-3 py-2 sm:px-4 rounded-lg transition-colors text-xs sm:text-sm font-medium"
                 >
-                    🚪 Sair
+                    🚪 <span class="hidden sm:inline">Sair</span>
                 </button>
             </div>
         </nav>
     </header>
 
-    <main class="container mx-auto px-4 py-12 no-print">
+    <main class="container mx-auto px-4 py-6 sm:py-12 no-print">
 
         <div id="dashboard-section" class="max-w-6xl mx-auto">
-            <div class="mb-8">
-                <h1 class="text-3xl md:text-4xl font-bold mb-2">Meus QR Codes</h1>
-                <p class="text-gray-400 flex items-center gap-2">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div class="mb-6 sm:mb-8">
+                <h1 class="text-2xl sm:text-3xl md:text-4xl font-bold mb-2">Meus QR Codes</h1>
+                <p class="text-sm sm:text-base text-gray-400 flex items-center gap-2">
+                    <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
                     </svg>
-                    <span id="user-email-display"></span>
+                    <span id="user-email-display" class="break-all"></span>
                 </p>
             </div>
 
-            <div id="links-container" class="space-y-4"></div>
+            <div id="links-container" class="space-y-3 sm:space-y-4"></div>
 
             <div id="empty-state" class="hidden text-center py-12">
-                <div class="text-6xl mb-4">📭</div>
-                <h2 class="text-2xl font-bold mb-2">Nenhum QR Code ainda</h2>
-                <p class="text-gray-400 mb-6">Crie seu primeiro QR Code dinâmico!</p>
-                <a href="create.html" class="inline-block bg-blue-600 hover:bg-blue-700 px-6 py-3 rounded-lg font-semibold transition-colors">
+                <div class="text-5xl sm:text-6xl mb-4">📭</div>
+                <h2 class="text-xl sm:text-2xl font-bold mb-2">Nenhum QR Code ainda</h2>
+                <p class="text-sm sm:text-base text-gray-400 mb-6 px-4">Crie seu primeiro QR Code dinâmico!</p>
+                <a href="create.html" class="inline-block bg-blue-600 hover:bg-blue-700 px-6 py-3 rounded-lg font-semibold transition-colors text-sm sm:text-base">
                     Criar QR Code
                 </a>
             </div>
@@ -99,16 +117,16 @@
 
     <!-- Edit Modal -->
     <div id="edit-modal" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50 no-print">
-        <div class="bg-slate-800 rounded-2xl p-8 max-w-md w-full border border-slate-700">
-            <h2 class="text-2xl font-bold mb-6">Editar QR Code</h2>
+        <div class="bg-slate-800 rounded-2xl p-6 sm:p-8 max-w-md w-full border border-slate-700 max-h-[90vh] overflow-y-auto">
+            <h2 class="text-xl sm:text-2xl font-bold mb-4 sm:mb-6">Editar QR Code</h2>
             
-            <form id="edit-form" class="space-y-4">
+            <form id="edit-form" class="space-y-3 sm:space-y-4">
                 <div>
                     <label class="block text-sm font-medium mb-2">Nome do Link</label>
                     <input 
                         type="text" 
                         id="edit-name" 
-                        class="w-full px-4 py-3 bg-slate-900 border border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-white"
+                        class="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-slate-900 border border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-white text-sm sm:text-base"
                     >
                 </div>
                 <div>
@@ -117,7 +135,7 @@
                         type="url" 
                         id="edit-url" 
                         required
-                        class="w-full px-4 py-3 bg-slate-900 border border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-white"
+                        class="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-slate-900 border border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-white text-sm sm:text-base"
                     >
                 </div>
                 <div>
@@ -125,12 +143,12 @@
                     <input 
                         type="datetime-local" 
                         id="edit-expires" 
-                        class="w-full px-4 py-3 bg-slate-900 border border-slate-600 rounded-lg focus:ring-2 focus:ring-orange-500 outline-none text-white"
+                        class="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-slate-900 border border-slate-600 rounded-lg focus:ring-2 focus:ring-orange-500 outline-none text-white text-sm sm:text-base"
                     >
-                    <div class="flex gap-2 mt-2">
-                        <button type="button" onclick="setEditExpiry(7)" class="text-xs bg-slate-700 hover:bg-slate-600 px-3 py-1 rounded">+ 7 dias</button>
-                        <button type="button" onclick="setEditExpiry(30)" class="text-xs bg-slate-700 hover:bg-slate-600 px-3 py-1 rounded">+ 30 dias</button>
-                        <button type="button" onclick="clearEditExpiry()" class="text-xs bg-red-600 hover:bg-red-700 px-3 py-1 rounded">Limpar</button>
+                    <div class="flex flex-wrap gap-2 mt-2">
+                        <button type="button" onclick="setEditExpiry(7)" class="text-xs bg-slate-700 hover:bg-slate-600 px-2.5 sm:px-3 py-1 rounded">+ 7 dias</button>
+                        <button type="button" onclick="setEditExpiry(30)" class="text-xs bg-slate-700 hover:bg-slate-600 px-2.5 sm:px-3 py-1 rounded">+ 30 dias</button>
+                        <button type="button" onclick="clearEditExpiry()" class="text-xs bg-red-600 hover:bg-red-700 px-2.5 sm:px-3 py-1 rounded">Limpar</button>
                     </div>
                 </div>
                 <div>
@@ -139,21 +157,21 @@
                         type="password" 
                         id="edit-password" 
                         placeholder="Deixe vazio para remover senha"
-                        class="w-full px-4 py-3 bg-slate-900 border border-slate-600 rounded-lg focus:ring-2 focus:ring-purple-500 outline-none text-white"
+                        class="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-slate-900 border border-slate-600 rounded-lg focus:ring-2 focus:ring-purple-500 outline-none text-white text-sm sm:text-base"
                     >
                     <p class="text-xs text-gray-500 mt-2">Digite nova senha ou deixe vazio para manter/remover</p>
                 </div>
-                <div class="flex gap-3">
+                <div class="flex gap-2 sm:gap-3 pt-2">
                     <button 
                         type="submit" 
-                        class="flex-1 bg-blue-600 hover:bg-blue-700 py-3 rounded-lg font-semibold"
+                        class="flex-1 bg-blue-600 hover:bg-blue-700 py-2.5 sm:py-3 rounded-lg font-semibold text-sm sm:text-base"
                     >
                         Salvar
                     </button>
                     <button 
                         type="button" 
                         onclick="closeEditModal()" 
-                        class="flex-1 bg-slate-700 hover:bg-slate-600 py-3 rounded-lg font-semibold"
+                        class="flex-1 bg-slate-700 hover:bg-slate-600 py-2.5 sm:py-3 rounded-lg font-semibold text-sm sm:text-base"
                     >
                         Cancelar
                     </button>
@@ -200,7 +218,7 @@
 
         function getExpiryBadge(expiresAt) {
             if (!expiresAt) {
-                return '<span class="px-2 py-1 bg-green-600/20 text-green-400 rounded text-xs font-medium">✓ Permanente</span>';
+                return '<span class="px-2 py-1 bg-green-600/20 text-green-400 rounded text-xs font-medium whitespace-nowrap">✓ Permanente</span>';
             }
 
             const now = new Date();
@@ -208,22 +226,22 @@
             const isExpired = now > expiry;
 
             if (isExpired) {
-                return '<span class="px-2 py-1 bg-red-600/20 text-red-400 rounded text-xs font-medium">⏰ Expirado</span>';
+                return '<span class="px-2 py-1 bg-red-600/20 text-red-400 rounded text-xs font-medium whitespace-nowrap">⏰ Expirado</span>';
             }
 
             const diffTime = expiry - now;
             const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
             if (diffDays <= 3) {
-                return `<span class="px-2 py-1 bg-orange-600/20 text-orange-400 rounded text-xs font-medium">⚠️ Expira em ${diffDays}d</span>`;
+                return `<span class="px-2 py-1 bg-orange-600/20 text-orange-400 rounded text-xs font-medium whitespace-nowrap">⚠️ Expira em ${diffDays}d</span>`;
             }
 
-            return `<span class="px-2 py-1 bg-blue-600/20 text-blue-400 rounded text-xs font-medium">⏰ ${diffDays} dias</span>`;
+            return `<span class="px-2 py-1 bg-blue-600/20 text-blue-400 rounded text-xs font-medium whitespace-nowrap">⏰ ${diffDays} dias</span>`;
         }
 
         function getPasswordBadge(hasPassword) {
             if (hasPassword) {
-                return '<span class="px-2 py-1 bg-purple-600/20 text-purple-400 rounded text-xs font-medium">🔒 Protegido</span>';
+                return '<span class="px-2 py-1 bg-purple-600/20 text-purple-400 rounded text-xs font-medium whitespace-nowrap">🔒 Protegido</span>';
             }
             return '';
         }
@@ -267,60 +285,60 @@
                     const expiryText = link.expires_at ? `⏰ Expira: ${formatExpiry(link.expires_at)}` : '';
                     
                     return `
-                    <div class="bg-slate-800/50 rounded-xl p-6 border border-slate-700 hover:border-slate-600 transition-colors">
-                        <div class="flex flex-col gap-4">
+                    <div class="bg-slate-800/50 rounded-xl p-4 sm:p-6 border border-slate-700 hover:border-slate-600 transition-colors qr-card">
+                        <div class="flex flex-col gap-3 sm:gap-4">
                             <div class="flex-1">
-                                <div class="flex items-center gap-3 mb-2 flex-wrap">
-                                    <h3 class="text-xl font-bold">${link.link_name}</h3>
+                                <div class="flex items-center gap-2 sm:gap-3 mb-2 flex-wrap">
+                                    <h3 class="text-lg sm:text-xl font-bold break-words">${link.link_name}</h3>
                                     ${expiryBadge}
                                     ${passwordBadge}
                                 </div>
-                                <p class="text-sm text-gray-400 mb-2 break-all">${link.destination_url}</p>
-                                <div class="flex flex-wrap gap-4 text-sm text-gray-500">
+                                <p class="text-xs sm:text-sm text-gray-400 mb-2 break-all">${link.destination_url}</p>
+                                <div class="flex flex-wrap gap-3 sm:gap-4 text-xs sm:text-sm text-gray-500">
                                     <span>👁️ ${link.clicks || 0} cliques</span>
                                     <span>📅 ${new Date(link.created_at).toLocaleDateString('pt-BR')}</span>
-                                    ${expiryText ? `<span>${expiryText}</span>` : ''}
+                                    ${expiryText ? `<span class="hidden sm:inline">${expiryText}</span>` : ''}
                                 </div>
                             </div>
                             <div class="flex flex-wrap gap-2">
                                 <button 
                                     onclick="copyLinkUrl('${link.slug}')" 
-                                    class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-1"
+                                    class="bg-blue-600 hover:bg-blue-700 px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors flex items-center justify-center gap-1"
                                     title="Copiar link"
                                 >
                                     📋 Copiar
                                 </button>
                                 <button 
                                     onclick="shareLink('${link.slug}', '${link.link_name.replace(/'/g, "\\'")}', '${link.destination_url}')" 
-                                    class="bg-cyan-600 hover:bg-cyan-700 px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-1"
+                                    class="bg-cyan-600 hover:bg-cyan-700 px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors flex items-center justify-center gap-1"
                                     title="Compartilhar"
                                 >
-                                    📤 Compartilhar
+                                    📤 Share
                                 </button>
                                 <button 
                                     onclick="downloadQR('${link.slug}', '${link.link_name.replace(/'/g, "\\'")}', '${link.qr_color || '#000000'}', '${link.bg_color || '#ffffff'}')" 
-                                    class="bg-green-600 hover:bg-green-700 px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-1"
+                                    class="bg-green-600 hover:bg-green-700 px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors flex items-center justify-center gap-1"
                                     title="Baixar QR"
                                 >
                                     💾 Baixar
                                 </button>
                                 <button 
                                     onclick="printQR('${link.slug}', '${link.link_name.replace(/'/g, "\\'")}', '${link.destination_url}', '${link.qr_color || '#000000'}', '${link.bg_color || '#ffffff'}')" 
-                                    class="bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-1"
+                                    class="bg-purple-600 hover:bg-purple-700 px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors flex items-center justify-center gap-1"
                                     title="Imprimir"
                                 >
-                                    🖨️ Imprimir
+                                    🖨️ Print
                                 </button>
                                 <button 
                                     onclick="openEditModal('${link.slug}', \`${link.link_name}\`, \`${link.destination_url}\`, '${link.expires_at || ''}')" 
-                                    class="bg-yellow-600 hover:bg-yellow-700 px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-1"
+                                    class="bg-yellow-600 hover:bg-yellow-700 px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors flex items-center justify-center gap-1"
                                     title="Editar"
                                 >
                                     ✏️ Editar
                                 </button>
                                 <button 
                                     onclick="deleteLink('${link.slug}')" 
-                                    class="bg-red-600 hover:bg-red-700 px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-1"
+                                    class="bg-red-600 hover:bg-red-700 px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors flex items-center justify-center gap-1"
                                     title="Excluir"
                                 >
                                     🗑️ Excluir
