@@ -14,15 +14,15 @@
     <meta name="description" content="Crie e gerencie QR Codes dinâmicos com analytics e personalização">
     
     <!-- Manifest -->
-    <link rel="manifest" href="/manifest.json">
+    <link rel="manifest" href="/qrdynamic-saas/manifest.json">
     
     <!-- iOS Icons -->
-    <link rel="apple-touch-icon" sizes="180x180" href="/icons/icon-192x192.png">
-    <link rel="apple-touch-icon" sizes="152x152" href="/icons/icon-152x152.png">
-    <link rel="apple-touch-icon" sizes="144x144" href="/icons/icon-144x144.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/qrdynamic-saas/icons/icon-192x192.png">
+    <link rel="apple-touch-icon" sizes="152x152" href="/qrdynamic-saas/icons/icon-152x152.png">
+    <link rel="apple-touch-icon" sizes="144x144" href="/qrdynamic-saas/icons/icon-144x144.png">
     
     <!-- Favicon -->
-    <link rel="icon" type="image/png" sizes="32x32" href="/icons/icon-72x72.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/qrdynamic-saas/icons/icon-72x72.png">
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.3/dist/umd/supabase.min.js"></script>
@@ -408,7 +408,7 @@
     // Registrar Service Worker
     if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
-            navigator.serviceWorker.register('/service-worker.js')
+            navigator.serviceWorker.register('/qrdynamic-saas/service-worker.js')
                 .then(registration => {
                     console.log('✅ Service Worker registrado!', registration.scope);
                 })
