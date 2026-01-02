@@ -33,21 +33,31 @@
         @keyframes spin {
             to { transform: rotate(360deg); }
         }
-        .error-box {
+        .message-box {
             max-width: 500px;
             padding: 2rem;
-            background: rgba(239, 68, 68, 0.1);
-            border: 1px solid rgba(239, 68, 68, 0.3);
             border-radius: 1rem;
             text-align: center;
         }
+        .error-box {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+        }
         .expired-box {
-            max-width: 500px;
-            padding: 2rem;
             background: rgba(251, 146, 60, 0.1);
             border: 1px solid rgba(251, 146, 60, 0.3);
-            border-radius: 1rem;
-            text-align: center;
+        }
+        .password-box {
+            background: rgba(139, 92, 246, 0.1);
+            border: 1px solid rgba(139, 92, 246, 0.3);
+        }
+        .shake {
+            animation: shake 0.5s;
+        }
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
         }
     </style>
 </head>
@@ -63,9 +73,14 @@
             'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlzeWFyaHBxcHNsZmVoemNydG9tIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjcyMTg2NDcsImV4cCI6MjA4Mjc5NDY0N30.A2eXYvLaOPVszW2jsAy5OzPOYt6gQF2iUp8XSjyljPM'
         );
 
+        let currentLink = null;
+        let currentSlug = null;
+        let attempts = 0;
+
         async function redirect() {
             const urlParams = new URLSearchParams(window.location.search);
             const slug = urlParams.get('id');
+            currentSlug = slug;
 
             if (!slug) {
                 showError('Link inválido', 'Este QR Code não existe ou foi removido.');
@@ -76,7 +91,7 @@
                 // Buscar destino
                 const { data: link, error } = await supabase
                     .from('qr_links')
-                    .select('destination_url, clicks, expires_at')
+                    .select('destination_url, clicks, expires_at, password')
                     .eq('slug', slug)
                     .single();
 
@@ -85,7 +100,9 @@
                     return;
                 }
 
-                // Verificar expiração [web:113]
+                currentLink = link;
+
+                // Verificar expiração
                 if (link.expires_at) {
                     const now = new Date();
                     const expiryDate = new Date(link.expires_at);
@@ -96,9 +113,26 @@
                     }
                 }
 
+                // Verificar senha
+                if (link.password) {
+                    showPasswordPrompt();
+                    return;
+                }
+
+                // Sem senha, redirecionar direto
+                await registerClickAndRedirect(link.destination_url);
+
+            } catch (error) {
+                console.error('Erro:', error);
+                showError('Erro ao redirecionar', 'Tente novamente mais tarde.');
+            }
+        }
+
+        async function registerClickAndRedirect(destinationUrl) {
+            try {
                 // Registrar clique detalhado
                 await supabase.from('click_logs').insert([{
-                    slug: slug,
+                    slug: currentSlug,
                     user_agent: navigator.userAgent,
                     referrer: document.referrer || 'direct',
                     device: /mobile/i.test(navigator.userAgent) ? 'mobile' : 'desktop'
@@ -107,21 +141,99 @@
                 // Atualizar contador geral
                 await supabase
                     .from('qr_links')
-                    .update({ clicks: (link.clicks || 0) + 1 })
-                    .eq('slug', slug);
+                    .update({ clicks: (currentLink.clicks || 0) + 1 })
+                    .eq('slug', currentSlug);
 
                 // Redirecionar
-                window.location.href = link.destination_url;
-
+                window.location.href = destinationUrl;
             } catch (error) {
-                console.error('Erro:', error);
-                showError('Erro ao redirecionar', 'Tente novamente mais tarde.');
+                console.error('Erro ao registrar clique:', error);
+                // Redirecionar mesmo com erro de logging
+                window.location.href = destinationUrl;
+            }
+        }
+
+        function showPasswordPrompt() {
+            document.body.innerHTML = `
+                <div class="message-box password-box">
+                    <div class="text-6xl mb-4">🔒</div>
+                    <h1 class="text-2xl font-bold mb-2">QR Code Protegido</h1>
+                    <p class="text-gray-300 mb-6">Este link requer senha para acesso</p>
+                    
+                    <div id="password-form" class="space-y-4">
+                        <input 
+                            type="password" 
+                            id="password-input" 
+                            placeholder="Digite a senha"
+                            class="w-full px-4 py-3 bg-slate-900 border border-slate-600 rounded-lg focus:ring-2 focus:ring-purple-500 outline-none text-white text-center"
+                            onkeypress="if(event.key === 'Enter') checkPassword()"
+                            autofocus
+                        >
+                        <p id="error-message" class="text-red-400 text-sm hidden">❌ Senha incorreta</p>
+                        <button 
+                            onclick="checkPassword()"
+                            class="w-full bg-purple-600 hover:bg-purple-700 py-3 rounded-lg font-semibold transition-all"
+                        >
+                            Acessar
+                        </button>
+                        <p class="text-xs text-gray-500 mt-4">Tentativas: <span id="attempts-count">0</span>/5</p>
+                    </div>
+                </div>
+            `;
+        }
+
+        async function checkPassword() {
+            const input = document.getElementById('password-input');
+            const errorMsg = document.getElementById('error-message');
+            const passwordForm = document.getElementById('password-form');
+            const attemptsCount = document.getElementById('attempts-count');
+            
+            const enteredPassword = input.value.trim();
+
+            if (!enteredPassword) {
+                input.classList.add('shake');
+                setTimeout(() => input.classList.remove('shake'), 500);
+                return;
+            }
+
+            attempts++;
+            attemptsCount.textContent = attempts;
+
+            if (enteredPassword === currentLink.password) {
+                // Senha correta!
+                passwordForm.innerHTML = `
+                    <div class="text-center">
+                        <div class="text-6xl mb-4">✅</div>
+                        <p class="text-lg font-semibold mb-2">Acesso liberado!</p>
+                        <p class="text-gray-400">Redirecionando...</p>
+                    </div>
+                `;
+                
+                setTimeout(() => {
+                    registerClickAndRedirect(currentLink.destination_url);
+                }, 1000);
+            } else {
+                // Senha incorreta
+                errorMsg.classList.remove('hidden');
+                input.value = '';
+                input.classList.add('shake');
+                setTimeout(() => input.classList.remove('shake'), 500);
+
+                if (attempts >= 5) {
+                    passwordForm.innerHTML = `
+                        <div class="text-center">
+                            <div class="text-6xl mb-4">🚫</div>
+                            <p class="text-lg font-semibold mb-2">Acesso Bloqueado</p>
+                            <p class="text-gray-400">Muitas tentativas incorretas</p>
+                        </div>
+                    `;
+                }
             }
         }
 
         function showError(title, message) {
             document.body.innerHTML = `
-                <div class="error-box">
+                <div class="message-box error-box">
                     <div class="text-6xl mb-4">❌</div>
                     <h1 class="text-2xl font-bold mb-2">${title}</h1>
                     <p class="text-gray-300">${message}</p>
@@ -132,7 +244,7 @@
         function showExpired(expiryDate) {
             const formatted = expiryDate.toLocaleString('pt-BR');
             document.body.innerHTML = `
-                <div class="expired-box">
+                <div class="message-box expired-box">
                     <div class="text-6xl mb-4">⏰</div>
                     <h1 class="text-2xl font-bold mb-2">QR Code Expirado</h1>
                     <p class="text-gray-300 mb-4">Este link expirou em:</p>
