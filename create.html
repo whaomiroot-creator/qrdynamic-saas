@@ -23,11 +23,23 @@
             border-radius: 1rem;
             margin: 0 auto;
         }
+        
+        @media print {
+            body * { visibility: hidden; }
+            .print-area, .print-area * { visibility: visible; }
+            .print-area {
+                position: absolute;
+                left: 50%;
+                top: 50%;
+                transform: translate(-50%, -50%);
+            }
+            .no-print { display: none !important; }
+        }
     </style>
 </head>
 <body class="min-h-screen text-gray-100">
     
-    <header class="container mx-auto px-4 py-6">
+    <header class="container mx-auto px-4 py-6 no-print">
         <nav class="flex justify-between items-center">
             <div class="flex items-center space-x-2">
                 <svg class="w-8 h-8 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -51,7 +63,7 @@
     </header>
 
     <main class="container mx-auto px-4 py-12">
-        <div class="text-center mb-12">
+        <div class="text-center mb-12 no-print">
             <h1 class="text-4xl md:text-6xl font-bold mb-4">
                 QR Codes <span class="gradient-text">Dinâmicos</span>
             </h1>
@@ -98,16 +110,20 @@
                 </div>
 
                 <div id="qr-section" class="hidden">
-                    <div class="text-center mb-6">
+                    <div class="text-center mb-6 no-print">
                         <h2 class="text-2xl font-bold mb-2">🎉 QR Code Criado!</h2>
                         <p class="text-gray-400">Seu QR Code dinâmico está pronto</p>
                     </div>
 
-                    <div class="bg-white p-8 rounded-2xl mb-6">
+                    <div class="bg-white p-8 rounded-2xl mb-6 print-area">
                         <div id="qrcode-container" class="flex justify-center"></div>
+                        <div class="text-center mt-4 text-gray-800">
+                            <p class="font-bold text-lg" id="print-link-name"></p>
+                            <p class="text-sm text-gray-600 break-all" id="print-short-url"></p>
+                        </div>
                     </div>
 
-                    <div class="bg-slate-900 p-4 rounded-lg mb-6">
+                    <div class="bg-slate-900 p-4 rounded-lg mb-6 no-print">
                         <label class="block text-sm font-medium mb-2">Link Curto</label>
                         <div class="flex gap-2">
                             <input 
@@ -125,12 +141,36 @@
                         </div>
                     </div>
 
-                    <div class="grid md:grid-cols-2 gap-4">
+                    <div class="grid md:grid-cols-2 gap-4 mb-4 no-print">
                         <button 
                             onclick="downloadQRCode()" 
-                            class="bg-green-600 hover:bg-green-700 py-3 rounded-lg font-semibold"
+                            class="bg-green-600 hover:bg-green-700 py-3 rounded-lg font-semibold flex items-center justify-center gap-2"
                         >
-                            📥 Download PNG
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                            </svg>
+                            Baixar PNG
+                        </button>
+                        <button 
+                            onclick="printQRCode()" 
+                            class="bg-purple-600 hover:bg-purple-700 py-3 rounded-lg font-semibold flex items-center justify-center gap-2"
+                        >
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path>
+                            </svg>
+                            Imprimir
+                        </button>
+                    </div>
+
+                    <div class="grid md:grid-cols-2 gap-4 no-print">
+                        <button 
+                            onclick="shareQRCode()" 
+                            class="bg-blue-600 hover:bg-blue-700 py-3 rounded-lg font-semibold flex items-center justify-center gap-2"
+                        >
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"></path>
+                            </svg>
+                            Compartilhar
                         </button>
                         <button 
                             onclick="location.reload()" 
@@ -154,6 +194,8 @@
         let currentSlug = null;
         let currentUserEmail = null;
         let currentUserName = null;
+        let currentLinkName = '';
+        let currentShortUrl = '';
 
         // Verificar se está logado
         supabase.auth.getSession().then(({ data: { session } }) => {
@@ -200,15 +242,18 @@
                 if (error) throw error;
 
                 currentSlug = slug;
-                const shortUrl = `${window.location.origin}/redirect.html?id=${slug}`;
+                currentLinkName = linkName;
+                currentShortUrl = `${window.location.origin}/redirect.html?id=${slug}`;
                 
-                document.getElementById('short-url').value = shortUrl;
+                document.getElementById('short-url').value = currentShortUrl;
+                document.getElementById('print-link-name').textContent = linkName;
+                document.getElementById('print-short-url').textContent = currentShortUrl;
                 
                 const qrContainer = document.getElementById('qrcode-container');
                 qrContainer.innerHTML = '';
                 
                 new QRCode(qrContainer, {
-                    text: shortUrl,
+                    text: currentShortUrl,
                     width: 256,
                     height: 256,
                     colorDark: '#000000',
@@ -240,6 +285,30 @@
             link.download = `qrcode-${currentSlug}.png`;
             link.href = image;
             link.click();
+        }
+
+        function printQRCode() {
+            window.print();
+        }
+
+        async function shareQRCode() {
+            if (navigator.share) {
+                try {
+                    await navigator.share({
+                        title: `QR Code - ${currentLinkName}`,
+                        text: `Confira meu QR Code dinâmico: ${currentLinkName}`,
+                        url: currentShortUrl
+                    });
+                    console.log('✅ Compartilhado com sucesso!');
+                } catch (error) {
+                    if (error.name !== 'AbortError') {
+                        copyUrl();
+                    }
+                }
+            } else {
+                copyUrl();
+                alert('📋 Link copiado! (Compartilhamento não suportado neste navegador)');
+            }
         }
     </script>
 
