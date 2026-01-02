@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Meus QR Codes - Painel</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.3/dist/umd/supabase.min.js"></script>
     <style>
         body { background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); }
@@ -13,11 +14,23 @@
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
+        
+        @media print {
+            body * { visibility: hidden; }
+            .print-area, .print-area * { visibility: visible; }
+            .print-area {
+                position: absolute;
+                left: 50%;
+                top: 50%;
+                transform: translate(-50%, -50%);
+            }
+            .no-print { display: none !important; }
+        }
     </style>
 </head>
 <body class="min-h-screen text-gray-100">
     
-    <header class="container mx-auto px-4 py-6">
+    <header class="container mx-auto px-4 py-6 no-print">
         <nav class="flex justify-between items-center">
             <div class="flex items-center space-x-2">
                 <svg class="w-8 h-8 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -43,7 +56,7 @@
         </nav>
     </header>
 
-    <main class="container mx-auto px-4 py-12">
+    <main class="container mx-auto px-4 py-12 no-print">
 
         <div id="dashboard-section" class="max-w-6xl mx-auto">
             <div class="mb-8">
@@ -70,7 +83,19 @@
 
     </main>
 
-    <div id="edit-modal" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+    <!-- Print Area -->
+    <div id="print-qr-area" class="print-area hidden">
+        <div class="bg-white p-8 text-center">
+            <div id="print-qrcode-container"></div>
+            <div class="mt-4 text-gray-800">
+                <p class="font-bold text-lg" id="print-qr-name"></p>
+                <p class="text-sm text-gray-600" id="print-qr-url"></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Modal -->
+    <div id="edit-modal" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50 no-print">
         <div class="bg-slate-800 rounded-2xl p-8 max-w-md w-full border border-slate-700">
             <h2 class="text-2xl font-bold mb-6">Editar QR Code</h2>
             
@@ -169,7 +194,7 @@
                 emptyState.classList.add('hidden');
                 container.innerHTML = data.map(link => `
                     <div class="bg-slate-800/50 rounded-xl p-6 border border-slate-700 hover:border-slate-600 transition-colors">
-                        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                        <div class="flex flex-col gap-4">
                             <div class="flex-1">
                                 <h3 class="text-xl font-bold mb-2">${link.link_name}</h3>
                                 <p class="text-sm text-gray-400 mb-2 break-all">${link.destination_url}</p>
@@ -178,27 +203,48 @@
                                     <span>📅 ${new Date(link.created_at).toLocaleDateString('pt-BR')}</span>
                                 </div>
                             </div>
-                            <div class="flex gap-2">
+                            <div class="flex flex-wrap gap-2">
                                 <button 
                                     onclick="copyLinkUrl('${link.slug}')" 
-                                    class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+                                    class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-1"
                                     title="Copiar link"
                                 >
                                     📋 Copiar
                                 </button>
                                 <button 
+                                    onclick="shareLink('${link.slug}', '${link.link_name.replace(/'/g, "\\'")}', '${link.destination_url}')" 
+                                    class="bg-cyan-600 hover:bg-cyan-700 px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-1"
+                                    title="Compartilhar"
+                                >
+                                    📤 Compartilhar
+                                </button>
+                                <button 
+                                    onclick="downloadQR('${link.slug}', '${link.link_name.replace(/'/g, "\\'")}')" 
+                                    class="bg-green-600 hover:bg-green-700 px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-1"
+                                    title="Baixar QR"
+                                >
+                                    💾 Baixar
+                                </button>
+                                <button 
+                                    onclick="printQR('${link.slug}', '${link.link_name.replace(/'/g, "\\'")}', '${link.destination_url}')" 
+                                    class="bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-1"
+                                    title="Imprimir"
+                                >
+                                    🖨️ Imprimir
+                                </button>
+                                <button 
                                     onclick="openEditModal('${link.slug}', \`${link.link_name}\`, \`${link.destination_url}\`)" 
-                                    class="bg-green-600 hover:bg-green-700 px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+                                    class="bg-yellow-600 hover:bg-yellow-700 px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-1"
                                     title="Editar"
                                 >
-                                    ✏️
+                                    ✏️ Editar
                                 </button>
                                 <button 
                                     onclick="deleteLink('${link.slug}')" 
-                                    class="bg-red-600 hover:bg-red-700 px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+                                    class="bg-red-600 hover:bg-red-700 px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-1"
                                     title="Excluir"
                                 >
-                                    🗑️
+                                    🗑️ Excluir
                                 </button>
                             </div>
                         </div>
@@ -213,6 +259,80 @@
         function copyLinkUrl(slug) {
             const url = `${window.location.origin}/redirect.html?id=${slug}`;
             navigator.clipboard.writeText(url).then(() => alert('✅ Link copiado!'));
+        }
+
+        async function shareLink(slug, name, destinationUrl) {
+            const url = `${window.location.origin}/redirect.html?id=${slug}`;
+            
+            if (navigator.share) {
+                try {
+                    await navigator.share({
+                        title: `QR Code - ${name}`,
+                        text: `Confira meu QR Code: ${name}\nDestino: ${destinationUrl}`,
+                        url: url
+                    });
+                    console.log('✅ Compartilhado com sucesso!');
+                } catch (error) {
+                    if (error.name !== 'AbortError') {
+                        copyLinkUrl(slug);
+                    }
+                }
+            } else {
+                copyLinkUrl(slug);
+                alert('📋 Link copiado! (Compartilhamento não suportado neste navegador)');
+            }
+        }
+
+        function downloadQR(slug, name) {
+            const url = `${window.location.origin}/redirect.html?id=${slug}`;
+            const tempDiv = document.createElement('div');
+            tempDiv.style.position = 'absolute';
+            tempDiv.style.left = '-9999px';
+            document.body.appendChild(tempDiv);
+
+            new QRCode(tempDiv, {
+                text: url,
+                width: 512,
+                height: 512,
+                colorDark: '#000000',
+                colorLight: '#ffffff',
+                correctLevel: QRCode.CorrectLevel.H
+            });
+
+            setTimeout(() => {
+                const canvas = tempDiv.querySelector('canvas');
+                const image = canvas.toDataURL('image/png');
+                const link = document.createElement('a');
+                link.download = `qrcode-${name.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.png`;
+                link.href = image;
+                link.click();
+                document.body.removeChild(tempDiv);
+            }, 100);
+        }
+
+        function printQR(slug, name, destinationUrl) {
+            const url = `${window.location.origin}/redirect.html?id=${slug}`;
+            
+            document.getElementById('print-qr-name').textContent = name;
+            document.getElementById('print-qr-url').textContent = url;
+            
+            const printContainer = document.getElementById('print-qrcode-container');
+            printContainer.innerHTML = '';
+            
+            new QRCode(printContainer, {
+                text: url,
+                width: 256,
+                height: 256,
+                colorDark: '#000000',
+                colorLight: '#ffffff',
+                correctLevel: QRCode.CorrectLevel.H
+            });
+
+            setTimeout(() => {
+                document.getElementById('print-qr-area').classList.remove('hidden');
+                window.print();
+                document.getElementById('print-qr-area').classList.add('hidden');
+            }, 100);
         }
 
         function openEditModal(slug, name, url) {
