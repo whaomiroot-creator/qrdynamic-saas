@@ -122,9 +122,340 @@
                 Crie QR Codes de URL, Texto, Email, WhatsApp, WiFi, vCard, PIX e muito mais!
             </p>
         </div>
+
+        <div class="max-w-6xl mx-auto">
+            <div class="grid md:grid-cols-2 gap-6 sm:gap-8">
+                
+                <div class="bg-slate-800/50 backdrop-blur-lg rounded-2xl shadow-2xl p-6 sm:p-8 card-hover border border-slate-700">
+                    
+                    <h2 class="text-xl sm:text-2xl font-bold mb-4 sm:mb-6">Criar Novo QR Code</h2>
+                    
+                    <div class="mb-6">
+                        <label class="block text-sm font-medium mb-3">Tipo de QR Code</label>
+                        <select id="qr-type" onchange="changeQRType()" class="w-full px-4 py-3 bg-slate-900 border border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-white text-base">
+                            <option value="url">🌐 URL / Link (Dinâmico)</option>
+                            <option value="text">📝 Texto Simples (Estático)</option>
+                            <option value="email">📧 Email (Estático)</option>
+                            <option value="whatsapp">💬 WhatsApp (Estático)</option>
+                            <option value="phone">📞 Telefone (Estático)</option>
+                            <option value="sms">📱 SMS (Estático)</option>
+                            <option value="wifi">📶 WiFi (Estático)</option>
+                            <option value="vcard">👤 vCard (Estático)</option>
+                            <option value="pix">💳 PIX (Estático)</option>
+                            <option value="location">📍 Localização (Estático)</option>
+                        </select>
+                        
+                        <div id="qr-type-info" class="info-badge text-blue-300 mt-3">
+                            <strong>💡 Dinâmico:</strong> Você pode editar o destino depois, rastrear cliques e adicionar senha/expiração.
+                        </div>
+                    </div>
+
+                    <form id="qr-form" class="space-y-4 sm:space-y-6">
+
+                        <div id="form-url" class="form-section active">
+                            <div>
+                                <label class="block text-sm font-medium mb-2">URL de Destino</label>
+                                <input type="url" id="url-input" placeholder="https://seusite.com.br" oninput="updatePreview()" class="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-slate-900 border border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-white text-sm sm:text-base">
+                            </div>
+                        </div>
+
+                        <div id="form-text" class="form-section">
+                            <div>
+                                <label class="block text-sm font-medium mb-2">Texto</label>
+                                <textarea id="text-input" rows="4" placeholder="Digite seu texto aqui..." oninput="updatePreview()" class="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-slate-900 border border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-white text-sm sm:text-base resize-none"></textarea>
+                            </div>
+                        </div>
+
+                        <div id="form-email" class="form-section">
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-sm font-medium mb-2">Email do Destinatário</label>
+                                    <input type="email" id="email-to" placeholder="contato@exemplo.com" oninput="updatePreview()" class="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-slate-900 border border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-white text-sm sm:text-base">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium mb-2">Assunto (opcional)</label>
+                                    <input type="text" id="email-subject" placeholder="Assunto do email" oninput="updatePreview()" class="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-slate-900 border border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-white text-sm sm:text-base">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium mb-2">Mensagem (opcional)</label>
+                                    <textarea id="email-body" rows="3" placeholder="Corpo do email" oninput="updatePreview()" class="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-slate-900 border border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-white text-sm sm:text-base resize-none"></textarea>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="form-whatsapp" class="form-section">
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-sm font-medium mb-2">Número (com código do país)</label>
+                                    <input type="tel" id="whatsapp-number" placeholder="5511999999999" oninput="updatePreview()" class="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-slate-900 border border-slate-600 rounded-lg focus:ring-2 focus:ring-green-500 outline-none text-white text-sm sm:text-base">
+                                    <p class="text-xs text-gray-500 mt-2">Ex: 5511999999999 (sem + ou espaços)</p>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium mb-2">Mensagem (opcional)</label>
+                                    <textarea id="whatsapp-message" rows="3" placeholder="Olá! Vi seu QR Code..." oninput="updatePreview()" class="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-slate-900 border border-slate-600 rounded-lg focus:ring-2 focus:ring-green-500 outline-none text-white text-sm sm:text-base resize-none"></textarea>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="form-phone" class="form-section">
+                            <div>
+                                <label class="block text-sm font-medium mb-2">Número de Telefone</label>
+                                <input type="tel" id="phone-number" placeholder="+5511999999999" oninput="updatePreview()" class="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-slate-900 border border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-white text-sm sm:text-base">
+                            </div>
+                        </div>
+
+                        <div id="form-sms" class="form-section">
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-sm font-medium mb-2">Número de Telefone</label>
+                                    <input type="tel" id="sms-number" placeholder="+5511999999999" oninput="updatePreview()" class="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-slate-900 border border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-white text-sm sm:text-base">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium mb-2">Mensagem (opcional)</label>
+                                    <textarea id="sms-message" rows="3" placeholder="Sua mensagem SMS" oninput="updatePreview()" class="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-slate-900 border border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-white text-sm sm:text-base resize-none"></textarea>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="form-wifi" class="form-section">
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-sm font-medium mb-2">Nome da Rede (SSID)</label>
+                                    <input type="text" id="wifi-ssid" placeholder="MinhaRedeWiFi" oninput="updatePreview()" class="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-slate-900 border border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-white text-sm sm:text-base">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium mb-2">Senha</label>
+                                    <input type="text" id="wifi-password" placeholder="senha123" oninput="updatePreview()" class="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-slate-900 border border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-white text-sm sm:text-base">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium mb-2">Tipo de Segurança</label>
+                                    <select id="wifi-security" onchange="updatePreview()" class="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-slate-900 border border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-white text-sm sm:text-base">
+                                        <option value="WPA">WPA/WPA2</option>
+                                        <option value="WEP">WEP</option>
+                                        <option value="nopass">Sem senha</option>
+                                    </select>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <input type="checkbox" id="wifi-hidden" onchange="updatePreview()" class="w-4 h-4 bg-slate-900 border-slate-600 rounded focus:ring-blue-500">
+                                    <label for="wifi-hidden" class="text-sm">Rede oculta</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="form-vcard" class="form-section">
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-sm font-medium mb-2">Nome Completo</label>
+                                    <input type="text" id="vcard-name" placeholder="João Silva" oninput="updatePreview()" class="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-slate-900 border border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-white text-sm sm:text-base">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium mb-2">Telefone</label>
+                                    <input type="tel" id="vcard-phone" placeholder="+5511999999999" oninput="updatePreview()" class="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-slate-900 border border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-white text-sm sm:text-base">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium mb-2">Email</label>
+                                    <input type="email" id="vcard-email" placeholder="joao@exemplo.com" oninput="updatePreview()" class="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-slate-900 border border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-white text-sm sm:text-base">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium mb-2">Empresa (opcional)</label>
+                                    <input type="text" id="vcard-company" placeholder="Minha Empresa Ltda" oninput="updatePreview()" class="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-slate-900 border border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-white text-sm sm:text-base">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium mb-2">Site (opcional)</label>
+                                    <input type="url" id="vcard-url" placeholder="https://seusite.com" oninput="updatePreview()" class="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-slate-900 border border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-white text-sm sm:text-base">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="form-pix" class="form-section">
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-sm font-medium mb-2">Chave PIX</label>
+                                    <input type="text" id="pix-key" placeholder="email@exemplo.com ou CPF/CNPJ" oninput="updatePreview()" class="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-slate-900 border border-slate-600 rounded-lg focus:ring-2 focus:ring-green-500 outline-none text-white text-sm sm:text-base">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium mb-2">Nome do Beneficiário</label>
+                                    <input type="text" id="pix-name" placeholder="João Silva" oninput="updatePreview()" class="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-slate-900 border border-slate-600 rounded-lg focus:ring-2 focus:ring-green-500 outline-none text-white text-sm sm:text-base">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium mb-2">Cidade</label>
+                                    <input type="text" id="pix-city" placeholder="São Paulo" oninput="updatePreview()" class="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-slate-900 border border-slate-600 rounded-lg focus:ring-2 focus:ring-green-500 outline-none text-white text-sm sm:text-base">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium mb-2">Valor (opcional)</label>
+                                    <input type="number" id="pix-amount" step="0.01" placeholder="10.00" oninput="updatePreview()" class="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-slate-900 border border-slate-600 rounded-lg focus:ring-2 focus:ring-green-500 outline-none text-white text-sm sm:text-base">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="form-location" class="form-section">
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-sm font-medium mb-2">Latitude</label>
+                                    <input type="text" id="location-lat" placeholder="-23.550520" oninput="updatePreview()" class="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-slate-900 border border-slate-600 rounded-lg focus:ring-2 focus:ring-red-500 outline-none text-white text-sm sm:text-base">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium mb-2">Longitude</label>
+                                    <input type="text" id="location-lng" placeholder="-46.633308" oninput="updatePreview()" class="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-slate-900 border border-slate-600 rounded-lg focus:ring-2 focus:ring-red-500 outline-none text-white text-sm sm:text-base">
+                                </div>
+                                <p class="text-xs text-gray-500">Você pode pegar as coordenadas no Google Maps</p>
+                            </div>
+                        </div>
+
+                        <div class="border-t border-slate-700 pt-4">
+                            <label class="block text-sm font-medium mb-2">Nome do QR Code (opcional)</label>
+                            <input type="text" id="link-name" placeholder="Ex: Instagram, WhatsApp, Menu" class="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-slate-900 border border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-white text-sm sm:text-base">
+                        </div>
+
+                        <div id="dynamic-options" class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium mb-2 flex items-center gap-2">
+                                    <svg class="w-4 h-4 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    </svg>
+                                    Data de Expiração (opcional)
+                                </label>
+                                <input type="datetime-local" id="expires-at" class="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-slate-900 border border-slate-600 rounded-lg focus:ring-2 focus:ring-orange-500 outline-none text-white text-sm sm:text-base">
+                                <p class="text-xs text-gray-500 mt-2">Deixe vazio para QR Code permanente</p>
+                                <div class="flex flex-wrap gap-2 mt-3">
+                                    <button type="button" onclick="setExpiry(7)" class="text-xs bg-slate-700 hover:bg-slate-600 px-2.5 sm:px-3 py-1 rounded">+ 7 dias</button>
+                                    <button type="button" onclick="setExpiry(30)" class="text-xs bg-slate-700 hover:bg-slate-600 px-2.5 sm:px-3 py-1 rounded">+ 30 dias</button>
+                                    <button type="button" onclick="setExpiry(90)" class="text-xs bg-slate-700 hover:bg-slate-600 px-2.5 sm:px-3 py-1 rounded">+ 90 dias</button>
+                                    <button type="button" onclick="clearExpiry()" class="text-xs bg-red-600 hover:bg-red-700 px-2.5 sm:px-3 py-1 rounded">Limpar</button>
+                                </div>
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium mb-2 flex items-center gap-2">
+                                    <svg class="w-4 h-4 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                                    </svg>
+                                    Limite de Cliques (opcional)
+                                </label>
+                                <input type="number" id="click-limit" min="1" placeholder="Ex: 100, 500, 1000" class="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-slate-900 border border-slate-600 rounded-lg focus:ring-2 focus:ring-cyan-500 outline-none text-white text-sm sm:text-base">
+                                <p class="text-xs text-gray-500 mt-2">QR Code para de funcionar após X acessos</p>
+                                <div class="flex flex-wrap gap-2 mt-3">
+                                    <button type="button" onclick="setClickLimit(50)" class="text-xs bg-slate-700 hover:bg-slate-600 px-2.5 sm:px-3 py-1 rounded">50 cliques</button>
+                                    <button type="button" onclick="setClickLimit(100)" class="text-xs bg-slate-700 hover:bg-slate-600 px-2.5 sm:px-3 py-1 rounded">100 cliques</button>
+                                    <button type="button" onclick="setClickLimit(500)" class="text-xs bg-slate-700 hover:bg-slate-600 px-2.5 sm:px-3 py-1 rounded">500 cliques</button>
+                                    <button type="button" onclick="clearClickLimit()" class="text-xs bg-red-600 hover:bg-red-700 px-2.5 sm:px-3 py-1 rounded">Ilimitado</button>
+                                </div>
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium mb-2 flex items-center gap-2">
+                                    <svg class="w-4 h-4 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                                    </svg>
+                                    Proteção por Senha (opcional)
+                                </label>
+                                <input type="password" id="qr-password" placeholder="Digite uma senha para proteger o link" class="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-slate-900 border border-slate-600 rounded-lg focus:ring-2 focus:ring-purple-500 outline-none text-white text-sm sm:text-base">
+                                <p class="text-xs text-gray-500 mt-2">Deixe vazio para QR Code sem proteção</p>
+                            </div>
+                        </div>
+
+                        <div class="border-t border-slate-700 pt-4 sm:pt-6">
+                            <h3 class="text-base sm:text-lg font-semibold mb-3 sm:mb-4">🎨 Personalização</h3>
+                            
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+                                <div>
+                                    <label class="block text-sm font-medium mb-2">Cor do QR Code</label>
+                                    <div class="flex items-center gap-2 sm:gap-3">
+                                        <input type="color" id="qr-color" value="#000000" oninput="syncColorPicker('qr'); updatePreview();" class="color-picker">
+                                        <input type="text" id="qr-color-text" value="#000000" oninput="syncColorText('qr'); updatePreview();" class="flex-1 px-2 sm:px-3 py-2 bg-slate-900 border border-slate-600 rounded-lg text-xs sm:text-sm text-white">
+                                    </div>
+                                </div>
+                                
+                                <div>
+                                    <label class="block text-sm font-medium mb-2">Cor de Fundo</label>
+                                    <div class="flex items-center gap-2 sm:gap-3">
+                                        <input type="color" id="bg-color" value="#ffffff" oninput="syncColorPicker('bg'); updatePreview();" class="color-picker">
+                                        <input type="text" id="bg-color-text" value="#ffffff" oninput="syncColorText('bg'); updatePreview();" class="flex-1 px-2 sm:px-3 py-2 bg-slate-900 border border-slate-600 rounded-lg text-xs sm:text-sm text-white">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium mb-2">Logo (opcional)</label>
+                                <input type="file" id="logo-upload" accept="image/*" onchange="handleLogoUpload(event)" class="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-slate-900 border border-slate-600 rounded-lg text-xs sm:text-sm text-gray-400 file:mr-3 sm:file:mr-4 file:py-1.5 sm:file:py-2 file:px-3 sm:file:px-4 file:rounded-lg file:border-0 file:text-xs sm:file:text-sm file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-700 file:cursor-pointer">
+                                <p class="text-xs text-gray-500 mt-2">PNG ou JPG, máx 2MB</p>
+                            </div>
+
+                            <div class="mt-4">
+                                <label class="block text-sm font-medium mb-2">Presets Rápidos</label>
+                                <div class="flex gap-2 flex-wrap">
+                                    <button type="button" onclick="applyPreset('#000000', '#ffffff')" class="w-9 h-9 sm:w-10 sm:h-10 rounded-lg border-2 border-slate-600 bg-white relative overflow-hidden" title="Clássico">
+                                        <div class="absolute inset-0 bg-black" style="clip-path: polygon(0 0, 100% 0, 0 100%);"></div>
+                                    </button>
+                                    <button type="button" onclick="applyPreset('#3b82f6', '#ffffff')" class="w-9 h-9 sm:w-10 sm:h-10 rounded-lg border-2 border-slate-600 bg-white relative overflow-hidden" title="Azul">
+                                        <div class="absolute inset-0 bg-blue-500" style="clip-path: polygon(0 0, 100% 0, 0 100%);"></div>
+                                    </button>
+                                    <button type="button" onclick="applyPreset('#10b981', '#ffffff')" class="w-9 h-9 sm:w-10 sm:h-10 rounded-lg border-2 border-slate-600 bg-white relative overflow-hidden" title="Verde">
+                                        <div class="absolute inset-0 bg-green-500" style="clip-path: polygon(0 0, 100% 0, 0 100%);"></div>
+                                    </button>
+                                    <button type="button" onclick="applyPreset('#8b5cf6', '#ffffff')" class="w-9 h-9 sm:w-10 sm:h-10 rounded-lg border-2 border-slate-600 bg-white relative overflow-hidden" title="Roxo">
+                                        <div class="absolute inset-0 bg-purple-500" style="clip-path: polygon(0 0, 100% 0, 0 100%);"></div>
+                                    </button>
+                                    <button type="button" onclick="applyPreset('#ef4444', '#ffffff')" class="w-9 h-9 sm:w-10 sm:h-10 rounded-lg border-2 border-slate-600 bg-white relative overflow-hidden" title="Vermelho">
+                                        <div class="absolute inset-0 bg-red-500" style="clip-path: polygon(0 0, 100% 0, 0 100%);"></div>
+                                    </button>
+                                    <button type="button" onclick="applyPreset('#ffffff', '#000000')" class="w-9 h-9 sm:w-10 sm:h-10 rounded-lg border-2 border-slate-600 bg-black relative overflow-hidden" title="Invertido">
+                                        <div class="absolute inset-0 bg-white" style="clip-path: polygon(0 0, 100% 0, 0 100%);"></div>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 py-3 sm:py-4 rounded-lg font-semibold text-base sm:text-lg transition-all shadow-lg">
+                            ⚡ Gerar QR Code
+                        </button>
+                    </form>
+                </div>
+
+                <div class="bg-slate-800/50 backdrop-blur-lg rounded-2xl shadow-2xl p-6 sm:p-8 card-hover border border-slate-700">
+                    <h2 class="text-xl sm:text-2xl font-bold mb-4 sm:mb-6 text-center">Preview</h2>
+                    
+                    <div id="preview-container" class="bg-white p-6 sm:p-8 rounded-2xl mb-4 sm:mb-6 flex items-center justify-center min-h-[300px] sm:min-h-[350px]">
+                        <canvas id="qr-canvas" style="display: none; max-width: 100%; height: auto;"></canvas>
+                        <div id="preview-placeholder" class="text-center text-gray-400">
+                            <svg class="w-16 h-16 sm:w-24 sm:h-24 mx-auto mb-4 opacity-20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"></path>
+                            </svg>
+                            <p class="text-sm sm:text-base px-4">Preencha os campos para ver o preview</p>
+                        </div>
+                    </div>
+
+                    <div id="action-buttons" class="hidden space-y-2 sm:space-y-3">
+                        <button onclick="downloadQRCode()" class="w-full bg-green-600 hover:bg-green-700 py-2.5 sm:py-3 rounded-lg font-semibold flex items-center justify-center gap-2 text-sm sm:text-base">
+                            <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                            </svg>
+                            Baixar PNG
+                        </button>
+                        <button onclick="printQRCode()" class="w-full bg-purple-600 hover:bg-purple-700 py-2.5 sm:py-3 rounded-lg font-semibold flex items-center justify-center gap-2 text-sm sm:text-base">
+                            <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path>
+                            </svg>
+                            Imprimir
+                        </button>
+                        <button onclick="shareQRCode()" class="w-full bg-blue-600 hover:bg-blue-700 py-2.5 sm:py-3 rounded-lg font-semibold flex items-center justify-center gap-2 text-sm sm:text-base">
+                            <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"></path>
+                            </svg>
+                            Compartilhar
+                        </button>
+                        <button onclick="location.reload()" class="w-full bg-slate-700 hover:bg-slate-600 py-2.5 sm:py-3 rounded-lg font-semibold text-sm sm:text-base">
+                            🔄 Criar Outro
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
     <script src="https://cdn.rawgit.com/davidshimjs/qrcodejs/gh-pages/qrcode.min.js"></script>
     <script>
-        // ✅ CORREÇÃO PRINCIPAL: Criar o cliente Supabase
+        // ✅ INICIALIZAR SUPABASE
         const SUPABASE_URL = 'https://ysyarhpqpslfehzcrtom.supabase.co';
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlzeWFyaHBxcHNsZmVoemNydG9tIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjcyMTg2NDcsImV4cCI6MjA4Mjc5NDY0N30.A2eXYvLaOPVszW2jsAy5OzPOYt6gQF2iUp8XSjyljPM';
         const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -425,10 +756,13 @@
                         slug: shortCode,
                         destination_url: content,
                         qr_image: imageData,
+                        qr_color: document.getElementById('qr-color').value,
+                        bg_color: document.getElementById('bg-color').value,
                         expires_at: expiresAt,
                         click_limit: clickLimit,
                         password: password,
-                        clicks: 0
+                        clicks: 0,
+                        is_static: false
                     }])
                     .select();
 
@@ -438,21 +772,25 @@
                     return;
                 }
 
-                alert(`✅ QR Code criado com sucesso!\n\n🔗 Link: ${window.location.origin}/redirect.html?id=${shortCode}`);
+                alert(`✅ QR Code criado com sucesso!\n\n🔗 Link curto: ${window.location.origin}/r/${shortCode}`);
                 setTimeout(() => {
                     window.location.href = 'admin.html';
-                }, 1000);
+                }, 1500);
 
             } else {
+                const shortCode = Math.random().toString(36).substring(2, 8);
+                
                 const { data, error } = await supabase
                     .from('qr_links')
                     .insert([{
                         user_id: session.user.id,
                         user_email: session.user.email,
                         link_name: linkName,
-                        slug: Math.random().toString(36).substring(2, 8),
+                        slug: shortCode,
                         destination_url: content,
                         qr_image: imageData,
+                        qr_color: document.getElementById('qr-color').value,
+                        bg_color: document.getElementById('bg-color').value,
                         clicks: 0,
                         is_static: true
                     }])
@@ -467,7 +805,7 @@
                 alert(`✅ QR Code estático criado com sucesso!`);
                 setTimeout(() => {
                     window.location.href = 'admin.html';
-                }, 1000);
+                }, 1500);
             }
         });
     </script>
