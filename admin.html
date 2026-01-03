@@ -395,12 +395,12 @@
         }
 
         function copyLinkUrl(slug) {
-            const url = `${window.location.origin}/qrdynamic-saas/redirect.html?id=${slug}`;
+            const url = `https://qrdynamic.com.br/redirect.html?id=${slug}`;
             navigator.clipboard.writeText(url).then(() => alert('✅ Link copiado!'));
         }
 
         async function shareLink(slug, name, destinationUrl) {
-            const url = `${window.location.origin}/qrdynamic-saas/redirect.html?id=${slug}`;
+            const url = `https://qrdynamic.com.br/redirect.html?id=${slug}`;
             
             if (navigator.share) {
                 try {
@@ -421,7 +421,7 @@
         }
 
         function downloadQR(slug, name, qrColor, bgColor) {
-            const url = `${window.location.origin}/qrdynamic-saas/redirect.html?id=${slug}`;
+            const url = `https://qrdynamic.com.br/redirect.html?id=${slug}`;
             const tempDiv = document.createElement('div');
             tempDiv.style.position = 'absolute';
             tempDiv.style.left = '-9999px';
@@ -448,7 +448,7 @@
         }
 
         function printQR(slug, name, destinationUrl, qrColor, bgColor) {
-            const url = `${window.location.origin}/qrdynamic-saas/redirect.html?id=${slug}`;
+            const url = `https://qrdynamic.com.br/redirect.html?id=${slug}`;
             
             document.getElementById('print-qr-name').textContent = name;
             document.getElementById('print-qr-url').textContent = url;
