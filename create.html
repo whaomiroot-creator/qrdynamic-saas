@@ -14,15 +14,15 @@
     <meta name="description" content="Crie QR Codes dinâmicos personalizados">
     
     <!-- Manifest -->
-    <link rel="manifest" href="/qrdynamic-saas/manifest.json">
+    <link rel="manifest" href="/manifest.json">
     
     <!-- iOS Icons -->
-    <link rel="apple-touch-icon" sizes="180x180" href="/qrdynamic-saas/icons/icon-192x192.png">
-    <link rel="apple-touch-icon" sizes="152x152" href="/qrdynamic-saas/icons/icon-152x152.png">
-    <link rel="apple-touch-icon" sizes="144x144" href="/qrdynamic-saas/icons/icon-144x144.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/icons/icon-192x192.png">
+    <link rel="apple-touch-icon" sizes="152x152" href="/icons/icon-152x152.png">
+    <link rel="apple-touch-icon" sizes="144x144" href="/icons/icon-144x144.png">
     
     <!-- Favicon -->
-    <link rel="icon" type="image/png" sizes="32x32" href="/qrdynamic-saas/icons/icon-72x72.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/icons/icon-72x72.png">
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.3/dist/umd/supabase.min.js"></script>
@@ -111,6 +111,15 @@
                 height: 35px;
             }
         }
+
+        .info-badge {
+            background: rgba(59, 130, 246, 0.1);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+            font-size: 0.875rem;
+            margin-bottom: 1rem;
+        }
     </style>
 </head>
 <body class="min-h-screen text-gray-100">
@@ -164,17 +173,22 @@
                             onchange="changeQRType()"
                             class="w-full px-4 py-3 bg-slate-900 border border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-white text-base"
                         >
-                            <option value="url">🌐 URL / Link</option>
-                            <option value="text">📝 Texto Simples</option>
-                            <option value="email">📧 Email</option>
-                            <option value="whatsapp">💬 WhatsApp</option>
-                            <option value="phone">📞 Telefone</option>
-                            <option value="sms">📱 SMS</option>
-                            <option value="wifi">📶 WiFi</option>
-                            <option value="vcard">👤 vCard (Contato)</option>
-                            <option value="pix">💳 PIX</option>
-                            <option value="location">📍 Localização</option>
+                            <option value="url">🌐 URL / Link (Dinâmico)</option>
+                            <option value="text">📝 Texto Simples (Estático)</option>
+                            <option value="email">📧 Email (Estático)</option>
+                            <option value="whatsapp">💬 WhatsApp (Estático)</option>
+                            <option value="phone">📞 Telefone (Estático)</option>
+                            <option value="sms">📱 SMS (Estático)</option>
+                            <option value="wifi">📶 WiFi (Estático)</option>
+                            <option value="vcard">👤 vCard (Estático)</option>
+                            <option value="pix">💳 PIX (Estático)</option>
+                            <option value="location">📍 Localização (Estático)</option>
                         </select>
+                        
+                        <!-- Info Badge -->
+                        <div id="qr-type-info" class="info-badge text-blue-300 mt-3">
+                            <strong>💡 Dinâmico:</strong> Você pode editar o destino depois, rastrear cliques e adicionar senha/expiração.
+                        </div>
                     </div>
 
                     <form id="qr-form" class="space-y-4 sm:space-y-6">
@@ -498,67 +512,70 @@
                             >
                         </div>
 
-                        <!-- Data de Expiração -->
-                        <div>
-                            <label class="block text-sm font-medium mb-2 flex items-center gap-2">
-                                <svg class="w-4 h-4 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                </svg>
-                                Data de Expiração (opcional)
-                            </label>
-                            <input 
-                                type="datetime-local" 
-                                id="expires-at" 
-                                class="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-slate-900 border border-slate-600 rounded-lg focus:ring-2 focus:ring-orange-500 outline-none text-white text-sm sm:text-base"
-                            >
-                            <p class="text-xs text-gray-500 mt-2">Deixe vazio para QR Code permanente</p>
-                            <div class="flex flex-wrap gap-2 mt-3">
-                                <button type="button" onclick="setExpiry(7)" class="text-xs bg-slate-700 hover:bg-slate-600 px-2.5 sm:px-3 py-1 rounded">+ 7 dias</button>
-                                <button type="button" onclick="setExpiry(30)" class="text-xs bg-slate-700 hover:bg-slate-600 px-2.5 sm:px-3 py-1 rounded">+ 30 dias</button>
-                                <button type="button" onclick="setExpiry(90)" class="text-xs bg-slate-700 hover:bg-slate-600 px-2.5 sm:px-3 py-1 rounded">+ 90 dias</button>
-                                <button type="button" onclick="clearExpiry()" class="text-xs bg-red-600 hover:bg-red-700 px-2.5 sm:px-3 py-1 rounded">Limpar</button>
+                        <!-- Opções Dinâmicas (só para URL) -->
+                        <div id="dynamic-options" class="space-y-4">
+                            <!-- Data de Expiração -->
+                            <div>
+                                <label class="block text-sm font-medium mb-2 flex items-center gap-2">
+                                    <svg class="w-4 h-4 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    </svg>
+                                    Data de Expiração (opcional)
+                                </label>
+                                <input 
+                                    type="datetime-local" 
+                                    id="expires-at" 
+                                    class="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-slate-900 border border-slate-600 rounded-lg focus:ring-2 focus:ring-orange-500 outline-none text-white text-sm sm:text-base"
+                                >
+                                <p class="text-xs text-gray-500 mt-2">Deixe vazio para QR Code permanente</p>
+                                <div class="flex flex-wrap gap-2 mt-3">
+                                    <button type="button" onclick="setExpiry(7)" class="text-xs bg-slate-700 hover:bg-slate-600 px-2.5 sm:px-3 py-1 rounded">+ 7 dias</button>
+                                    <button type="button" onclick="setExpiry(30)" class="text-xs bg-slate-700 hover:bg-slate-600 px-2.5 sm:px-3 py-1 rounded">+ 30 dias</button>
+                                    <button type="button" onclick="setExpiry(90)" class="text-xs bg-slate-700 hover:bg-slate-600 px-2.5 sm:px-3 py-1 rounded">+ 90 dias</button>
+                                    <button type="button" onclick="clearExpiry()" class="text-xs bg-red-600 hover:bg-red-700 px-2.5 sm:px-3 py-1 rounded">Limpar</button>
+                                </div>
                             </div>
-                        </div>
 
-                        <!-- Limite de Cliques -->
-                        <div>
-                            <label class="block text-sm font-medium mb-2 flex items-center gap-2">
-                                <svg class="w-4 h-4 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
-                                </svg>
-                                Limite de Cliques (opcional)
-                            </label>
-                            <input 
-                                type="number" 
-                                id="click-limit" 
-                                min="1"
-                                placeholder="Ex: 100, 500, 1000"
-                                class="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-slate-900 border border-slate-600 rounded-lg focus:ring-2 focus:ring-cyan-500 outline-none text-white text-sm sm:text-base"
-                            >
-                            <p class="text-xs text-gray-500 mt-2">QR Code para de funcionar após X acessos</p>
-                            <div class="flex flex-wrap gap-2 mt-3">
-                                <button type="button" onclick="setClickLimit(50)" class="text-xs bg-slate-700 hover:bg-slate-600 px-2.5 sm:px-3 py-1 rounded">50 cliques</button>
-                                <button type="button" onclick="setClickLimit(100)" class="text-xs bg-slate-700 hover:bg-slate-600 px-2.5 sm:px-3 py-1 rounded">100 cliques</button>
-                                <button type="button" onclick="setClickLimit(500)" class="text-xs bg-slate-700 hover:bg-slate-600 px-2.5 sm:px-3 py-1 rounded">500 cliques</button>
-                                <button type="button" onclick="clearClickLimit()" class="text-xs bg-red-600 hover:bg-red-700 px-2.5 sm:px-3 py-1 rounded">Ilimitado</button>
+                            <!-- Limite de Cliques -->
+                            <div>
+                                <label class="block text-sm font-medium mb-2 flex items-center gap-2">
+                                    <svg class="w-4 h-4 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                                    </svg>
+                                    Limite de Cliques (opcional)
+                                </label>
+                                <input 
+                                    type="number" 
+                                    id="click-limit" 
+                                    min="1"
+                                    placeholder="Ex: 100, 500, 1000"
+                                    class="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-slate-900 border border-slate-600 rounded-lg focus:ring-2 focus:ring-cyan-500 outline-none text-white text-sm sm:text-base"
+                                >
+                                <p class="text-xs text-gray-500 mt-2">QR Code para de funcionar após X acessos</p>
+                                <div class="flex flex-wrap gap-2 mt-3">
+                                    <button type="button" onclick="setClickLimit(50)" class="text-xs bg-slate-700 hover:bg-slate-600 px-2.5 sm:px-3 py-1 rounded">50 cliques</button>
+                                    <button type="button" onclick="setClickLimit(100)" class="text-xs bg-slate-700 hover:bg-slate-600 px-2.5 sm:px-3 py-1 rounded">100 cliques</button>
+                                    <button type="button" onclick="setClickLimit(500)" class="text-xs bg-slate-700 hover:bg-slate-600 px-2.5 sm:px-3 py-1 rounded">500 cliques</button>
+                                    <button type="button" onclick="clearClickLimit()" class="text-xs bg-red-600 hover:bg-red-700 px-2.5 sm:px-3 py-1 rounded">Ilimitado</button>
+                                </div>
                             </div>
-                        </div>
 
-                        <!-- Proteção por Senha -->
-                        <div>
-                            <label class="block text-sm font-medium mb-2 flex items-center gap-2">
-                                <svg class="w-4 h-4 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
-                                </svg>
-                                Proteção por Senha (opcional)
-                            </label>
-                            <input 
-                                type="password" 
-                                id="qr-password" 
-                                placeholder="Digite uma senha para proteger o link"
-                                class="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-slate-900 border border-slate-600 rounded-lg focus:ring-2 focus:ring-purple-500 outline-none text-white text-sm sm:text-base"
-                            >
-                            <p class="text-xs text-gray-500 mt-2">Deixe vazio para QR Code sem proteção</p>
+                            <!-- Proteção por Senha -->
+                            <div>
+                                <label class="block text-sm font-medium mb-2 flex items-center gap-2">
+                                    <svg class="w-4 h-4 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                                    </svg>
+                                    Proteção por Senha (opcional)
+                                </label>
+                                <input 
+                                    type="password" 
+                                    id="qr-password" 
+                                    placeholder="Digite uma senha para proteger o link"
+                                    class="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-slate-900 border border-slate-600 rounded-lg focus:ring-2 focus:ring-purple-500 outline-none text-white text-sm sm:text-base"
+                                >
+                                <p class="text-xs text-gray-500 mt-2">Deixe vazio para QR Code sem proteção</p>
+                            </div>
                         </div>
 
                         <!-- Customização de Cores -->
@@ -708,6 +725,7 @@
         let currentShortUrl;
         let logoImage = null;
         let currentQRType = 'url';
+        let isStaticQR = false; // NOVO: controle de QR estático
 
         // Verificar login
         supabase.auth.getSession().then(({ data: { session } }) => {
@@ -733,6 +751,9 @@
         function changeQRType() {
             currentQRType = document.getElementById('qr-type').value;
             
+            // Definir se é estático ou dinâmico
+            isStaticQR = currentQRType !== 'url';
+            
             // Esconder todos os formulários
             document.querySelectorAll('.form-section').forEach(section => {
                 section.classList.remove('active');
@@ -740,6 +761,18 @@
             
             // Mostrar o formulário selecionado
             document.getElementById('form-' + currentQRType).classList.add('active');
+            
+            // Mostrar/Esconder opções dinâmicas
+            const dynamicOptions = document.getElementById('dynamic-options');
+            const infoBox = document.getElementById('qr-type-info');
+            
+            if (isStaticQR) {
+                dynamicOptions.style.display = 'none';
+                infoBox.innerHTML = '<strong>💡 Estático:</strong> QR Code funciona direto (mais rápido). Não pode ser editado depois, mas funciona offline.';
+            } else {
+                dynamicOptions.style.display = 'block';
+                infoBox.innerHTML = '<strong>💡 Dinâmico:</strong> Você pode editar o destino depois, rastrear cliques e adicionar senha/expiração.';
+            }
             
             updatePreview();
         }
@@ -1022,6 +1055,7 @@
             }, 100);
         }
 
+        // ===== SUBMIT FORM - LÓGICA PRINCIPAL =====
         document.getElementById('qr-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             
@@ -1031,49 +1065,72 @@
 
             const qrContent = generateQRContent();
             const linkName = document.getElementById('link-name').value || `QR Code ${currentQRType.toUpperCase()}`;
-            const slug = generateSlug();
             const qrColor = document.getElementById('qr-color').value;
             const bgColor = document.getElementById('bg-color').value;
-            const expiresAtInput = document.getElementById('expires-at').value;
-            const expiresAt = expiresAtInput ? new Date(expiresAtInput).toISOString() : null;
-            const password = document.getElementById('qr-password').value.trim() || null;
-            const clickLimitInput = document.getElementById('click-limit').value;
-            const clickLimit = clickLimitInput ? parseInt(clickLimitInput) : null;
+
+            if (!qrContent) {
+                alert('❌ Preencha os campos necessários!');
+                submitBtn.disabled = false;
+                submitBtn.textContent = '⚡ Gerar QR Code';
+                return;
+            }
 
             try {
-                const { data, error } = await supabase
-                    .from('qrlinks')
-                    .insert({
-                        slug: slug,
-                        destination_url: qrContent,
-                        link_name: linkName,
-                        user_email: currentUserEmail,
-                        qr_color: qrColor,
-                        bg_color: bgColor,
-                        expires_at: expiresAt,
-                        password: password,
-                        click_limit: clickLimit,
-                        qr_type: currentQRType
-                    })
-                    .select();
+                // ===== QR CODE ESTÁTICO (direto, sem banco) =====
+                if (isStaticQR) {
+                    currentLinkName = linkName;
+                    currentShortUrl = qrContent; // O conteúdo direto
+                    
+                    generateQRWithColors(qrContent, qrColor, bgColor);
+                    document.getElementById('action-buttons').classList.remove('hidden');
+                    
+                    alert('✅ QR Code estático criado!\n💡 Este QR funciona direto (sem passar pelo servidor).');
+                    
+                } 
+                // ===== QR CODE DINÂMICO (salva no banco) =====
+                else {
+                    const slug = generateSlug();
+                    const expiresAtInput = document.getElementById('expires-at').value;
+                    const expiresAt = expiresAtInput ? new Date(expiresAtInput).toISOString() : null;
+                    const password = document.getElementById('qr-password').value.trim() || null;
+                    const clickLimitInput = document.getElementById('click-limit').value;
+                    const clickLimit = clickLimitInput ? parseInt(clickLimitInput) : null;
 
-                if (error) throw error;
+                    const { data, error } = await supabase
+                        .from('qrlinks')
+                        .insert({
+                            slug: slug,
+                            destination_url: qrContent,
+                            link_name: linkName,
+                            user_email: currentUserEmail,
+                            qr_color: qrColor,
+                            bg_color: bgColor,
+                            expires_at: expiresAt,
+                            password: password,
+                            click_limit: clickLimit,
+                            qr_type: currentQRType
+                        })
+                        .select();
 
-                currentSlug = slug;
-                currentLinkName = linkName;
-          currentShortUrl = `https://qrdynamic.com.br/redirect.html?id=${slug}`;
-                generateQRWithColors(currentShortUrl, qrColor, bgColor);
-                document.getElementById('action-buttons').classList.remove('hidden');
+                    if (error) throw error;
 
-                let message = '✅ QR Code criado com sucesso!';
-                if (expiresAt) {
-                    const expDate = new Date(expiresAt).toLocaleString('pt-BR');
-                    message += `\n⏰ Expira em: ${expDate}`;
+                    currentSlug = slug;
+                    currentLinkName = linkName;
+                    currentShortUrl = `https://qrdynamic.com.br/redirect.html?id=${slug}`;
+
+                    generateQRWithColors(currentShortUrl, qrColor, bgColor);
+                    document.getElementById('action-buttons').classList.remove('hidden');
+
+                    let message = '✅ QR Code dinâmico criado com sucesso!';
+                    if (expiresAt) {
+                        const expDate = new Date(expiresAt).toLocaleString('pt-BR');
+                        message += `\n⏰ Expira em: ${expDate}`;
+                    }
+                    if (password) message += '\n🔒 Protegido por senha';
+                    if (clickLimit) message += `\n📊 Limite: ${clickLimit} cliques`;
+
+                    alert(message);
                 }
-                if (password) message += '\n🔒 Protegido por senha';
-                if (clickLimit) message += `\n📊 Limite: ${clickLimit} cliques`;
-
-                alert(message);
 
             } catch (error) {
                 alert('❌ Erro: ' + error.message);
@@ -1087,7 +1144,7 @@
             const canvas = document.getElementById('qr-canvas');
             const image = canvas.toDataURL('image/png');
             const link = document.createElement('a');
-            link.download = `qrcode-${currentSlug}-custom.png`;
+            link.download = `qrcode-${currentLinkName.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.png`;
             link.href = image;
             link.click();
         }
@@ -1097,22 +1154,49 @@
         }
 
         async function shareQRCode() {
-            if (navigator.share && currentShortUrl) {
-                try {
-                    await navigator.share({
-                        title: `QR Code - ${currentLinkName}`,
-                        text: `Confira meu QR Code: ${currentLinkName}`,
-                        url: currentShortUrl
-                    });
-                } catch (error) {
-                    if (error.name !== 'AbortError') {
-                        navigator.clipboard.writeText(currentShortUrl);
-                        alert('📋 Link copiado!');
+            const canvas = document.getElementById('qr-canvas');
+            
+            // Para QR Codes estáticos, compartilhar a imagem
+            if (isStaticQR) {
+                canvas.toBlob(async (blob) => {
+                    const file = new File([blob], 'qrcode.png', { type: 'image/png' });
+                    
+                    if (navigator.share && navigator.canShare({ files: [file] })) {
+                        try {
+                            await navigator.share({
+                                title: `QR Code - ${currentLinkName}`,
+                                text: `Meu QR Code: ${currentLinkName}`,
+                                files: [file]
+                            });
+                        } catch (error) {
+                            if (error.name !== 'AbortError') {
+                                alert('📋 Use o botão "Baixar" para salvar o QR Code!');
+                            }
+                        }
+                    } else {
+                        alert('📋 Use o botão "Baixar" para salvar o QR Code!');
                     }
+                });
+            } 
+            // Para QR Codes dinâmicos, compartilhar o link
+            else {
+                if (navigator.share && currentShortUrl) {
+                    try {
+                        await navigator.share({
+                            title: `QR Code - ${currentLinkName}`,
+                            text: `Confira meu QR Code: ${currentLinkName}`,
+                            url: currentShortUrl
+                        });
+                    } catch (error) {
+                        if (error.name !== 'AbortError') {
+                            navigator.clipboard.writeText(currentShortUrl);
+                            alert('📋 Link copiado!');
+                        }
+                    }
+                } else {
+                    navigator.clipboard.writeText(currentShortUrl);
+                    alert('📋 Link copiado!');
                 }
-            } else {
-                navigator.clipboard.writeText(currentShortUrl || generateQRContent());
-                alert('📋 Link copiado!');
             }
         }
     </script>
@@ -1121,7 +1205,7 @@
     <script>
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
-                navigator.serviceWorker.register('/qrdynamic-saas/service-worker.js')
+                navigator.serviceWorker.register('/service-worker.js')
                     .then(registration => {
                         console.log('Service Worker registrado!', registration.scope);
                     })
