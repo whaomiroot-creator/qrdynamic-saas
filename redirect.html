@@ -49,6 +49,7 @@
             text-align: left;
             font-size: 12px;
             font-family: monospace;
+            white-space: pre-wrap;
         }
     </style>
 </head>
@@ -60,17 +61,20 @@
     </div>
 
     <script>
-    const supabase = window.supabase.createClient(
-    'https://ysyarhpqpslfehzcrtom.supabase.co',
-    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlzeWFyaHBxcHNsZmVoemNydG9tIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjcyMTg2NDcsImV4cCI6MjA4Mjc5NDY0N30.A2eXYvLaOPVszW2jsAy5OzPOYt6gQF2iUp8XSjyljPM'
-);
+        const supabase = window.supabase.createClient(
+            'https://ysyarhpqpslfehzcrtom.supabase.co',
+            'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlzeWFyaHBxcHNsZmVoemNydG9tIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjcyMTg2NDcsImV4cCI6MjA4Mjc5NDY0N30.A2eXYvLaOPVszW2jsAy5OzPOYt6gQF2iUp8XSjyljPM'
+        );
 
         let currentLink = null;
         let currentSlug = null;
 
         function debug(message) {
             console.log('DEBUG:', message);
-            document.getElementById('debug-info').textContent += message + '\n';
+            const debugEl = document.getElementById('debug-info');
+            if (debugEl) {
+                debugEl.textContent += message + '\n';
+            }
         }
 
         async function redirect() {
@@ -89,7 +93,6 @@
 
                 debug('3. Buscando no banco...');
 
-                // ✅ CORREÇÃO 1: qrlinks → qr_links
                 const { data: link, error } = await supabase
                     .from('qr_links')
                     .select('destination_url, clicks, expires_at, password, click_limit')
@@ -113,12 +116,30 @@
                 debug(`5. Link encontrado! Destino: ${link.destination_url}`);
                 currentLink = link;
 
+                // ✅ VERIFICAR SE É QR CODE ESTÁTICO
+                const url = link.destination_url;
+                const isStatic = url.startsWith('BEGIN:VCARD') || 
+                                 url.startsWith('WIFI:') || 
+                                 url.startsWith('geo:') || 
+                                 url.startsWith('tel:') || 
+                                 url.startsWith('sms:') || 
+                                 url.startsWith('mailto:') ||
+                                 url.startsWith('000201'); // PIX
+
+                if (isStatic) {
+                    debug('6. QR Code Estático detectado');
+                    showStaticQRInfo();
+                    return;
+                }
+
+                // Verificar limite de cliques
                 if (link.click_limit && link.clicks >= link.click_limit) {
                     debug('6. Limite de cliques atingido');
                     showLimitReached(link.clicks, link.click_limit);
                     return;
                 }
 
+                // Verificar expiração
                 if (link.expires_at) {
                     const now = new Date();
                     const expiryDate = new Date(link.expires_at);
@@ -130,6 +151,7 @@
                     }
                 }
 
+                // Verificar senha
                 if (link.password) {
                     debug('6. Link protegido por senha');
                     showPasswordPrompt();
@@ -150,6 +172,7 @@
             try {
                 debug('7. Registrando clique...');
                 
+                // Registrar clique no log
                 await supabase.from('click_logs').insert([{
                     slug: currentSlug,
                     user_agent: navigator.userAgent,
@@ -157,7 +180,7 @@
                     device: /mobile/i.test(navigator.userAgent) ? 'mobile' : 'desktop'
                 }]);
 
-                // ✅ CORREÇÃO 2: qrlinks → qr_links
+                // Incrementar contador
                 await supabase
                     .from('qr_links')
                     .update({ clicks: (currentLink.clicks || 0) + 1 })
@@ -169,8 +192,27 @@
             } catch (error) {
                 console.error('Erro ao registrar:', error);
                 debug(`Erro ao registrar: ${error.message}`);
+                // Redirecionar mesmo se falhar o registro
                 window.location.href = destinationUrl;
             }
+        }
+
+        function showStaticQRInfo() {
+            document.body.innerHTML = `
+                <div class="message-box" style="background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.3);">
+                    <div class="text-6xl mb-4">📱</div>
+                    <h1 class="text-2xl font-bold mb-2">QR Code Estático</h1>
+                    <p class="text-gray-300 mb-4">Este QR Code contém dados que devem ser lidos diretamente pelo app de câmera do seu celular.</p>
+                    <div class="bg-blue-900/30 border border-blue-600/50 rounded-lg p-4 mb-4">
+                        <p class="text-blue-300 text-sm">
+                            ⚠️ <strong>Não use um leitor de QR Code via navegador!</strong>
+                        </p>
+                    </div>
+                    <p class="text-sm text-gray-400">
+                        Aponte a câmera do seu celular para o QR Code e ele abrirá automaticamente os dados (contato, WiFi, localização, etc).
+                    </p>
+                </div>
+            `;
         }
 
         function showPasswordPrompt() {
@@ -215,6 +257,7 @@
         }
 
         function showError(title, message) {
+            const debugInfo = document.getElementById('debug-info')?.textContent || 'Nenhuma informação de debug';
             document.body.innerHTML = `
                 <div class="message-box error-box">
                     <div class="text-6xl mb-4">❌</div>
@@ -222,7 +265,7 @@
                     <p class="text-gray-300">${message}</p>
                     <div class="debug-box">
                         <strong>Debug Info:</strong><br>
-                        ${document.getElementById('debug-info')?.textContent || 'Nenhuma informação de debug'}
+                        ${debugInfo}
                     </div>
                 </div>
             `;
@@ -257,4 +300,3 @@
     </script>
 </body>
 </html>
-
