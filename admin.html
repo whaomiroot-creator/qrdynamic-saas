@@ -262,6 +262,7 @@
             return '';
         }
 
+        // NOVO: Badge de limite de cliques
         function getClickLimitBadge(clicks, clickLimit) {
             if (!clickLimit) {
                 return '<span class="px-2 py-1 bg-slate-600/20 text-slate-400 rounded text-xs font-medium whitespace-nowrap">∞ Ilimitado</span>';
@@ -301,7 +302,7 @@
         async function loadLinks() {
             try {
                 const { data, error } = await supabase
-                    .from('qrlinks')
+                    .from('qr_links')
                     .select('*')
                     .eq('user_email', currentUserEmail)
                     .order('created_at', { ascending: false });
@@ -395,12 +396,12 @@
         }
 
         function copyLinkUrl(slug) {
-            const url = `https://qrdynamic.com.br/redirect.html?id=${slug}`;
+            const url = `${window.location.origin}/redirect.html?id=${slug}`;
             navigator.clipboard.writeText(url).then(() => alert('✅ Link copiado!'));
         }
 
         async function shareLink(slug, name, destinationUrl) {
-            const url = `https://qrdynamic.com.br/redirect.html?id=${slug}`;
+            const url = `${window.location.origin}/redirect.html?id=${slug}`;
             
             if (navigator.share) {
                 try {
@@ -421,7 +422,7 @@
         }
 
         function downloadQR(slug, name, qrColor, bgColor) {
-            const url = `https://qrdynamic.com.br/redirect.html?id=${slug}`;
+            const url = `${window.location.origin}/redirect.html?id=${slug}`;
             const tempDiv = document.createElement('div');
             tempDiv.style.position = 'absolute';
             tempDiv.style.left = '-9999px';
@@ -448,7 +449,7 @@
         }
 
         function printQR(slug, name, destinationUrl, qrColor, bgColor) {
-            const url = `https://qrdynamic.com.br/redirect.html?id=${slug}`;
+            const url = `${window.location.origin}/redirect.html?id=${slug}`;
             
             document.getElementById('print-qr-name').textContent = name;
             document.getElementById('print-qr-url').textContent = url;
@@ -526,7 +527,7 @@
                 const clickLimit = clickLimitInput ? parseInt(clickLimitInput) : null;
 
                 const { error } = await supabase
-                    .from('qrlinks')
+                    .from('qr_links')
                     .update({ 
                         link_name: document.getElementById('edit-name').value, 
                         destination_url: document.getElementById('edit-url').value,
@@ -552,7 +553,7 @@
 
             try {
                 const { error } = await supabase
-                    .from('qrlinks')
+                    .from('qr_links')
                     .delete()
                     .eq('slug', slug);
 
