@@ -1061,8 +1061,7 @@
 
                 currentSlug = slug;
                 currentLinkName = linkName;
-                currentShortUrl = `${window.location.origin}/qrdynamic-saas/redirect.html?id=${slug}`;
-
+          currentShortUrl = `https://qrdynamic.com.br/redirect.html?id=${slug}`;
                 generateQRWithColors(currentShortUrl, qrColor, bgColor);
                 document.getElementById('action-buttons').classList.remove('hidden');
 
