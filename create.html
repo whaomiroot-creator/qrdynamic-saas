@@ -817,110 +817,22 @@
             }
         }
 
-// ===== FUNÇÃO CORRIGIDA PIX EMV (PADRÃO BANCO CENTRAL) =====
-function generatePixPayload() {
-    const pixKey = document.getElementById('pix-key').value.trim();
-    const pixName = document.getElementById('pix-name').value.trim();
-    const pixCity = document.getElementById('pix-city').value.trim();
-    const pixAmount = document.getElementById('pix-amount').value.trim();
-    
-    if (!pixKey || !pixName || !pixCity) {
-        return '';
-    }
-    
-    // Normaliza os campos (remove acentos e limita tamanho)
-    const normalizedName = removeAccents(pixName.toUpperCase()).substring(0, 25);
-    const normalizedCity = removeAccents(pixCity.toUpperCase()).substring(0, 15);
-    const normalizedKey = pixKey.trim();
-    
-    // Monta o payload EMV
-    let payload = '';
-    
-    // ID 00: Payload Format Indicator (fixo)
-    payload += createTLV('00', '01');
-    
-    // ID 01: Point of Initiation Method (11 = estático, 12 = dinâmico)
-    if (pixAmount && pixAmount > 0) {
-        payload += createTLV('01', '12');
-    } else {
-        payload += createTLV('01', '11');
-    }
-    
-    // ID 26: Merchant Account Information (contém a chave PIX)
-    let merchantInfo = '';
-    merchantInfo += createTLV('00', 'br.gov.bcb.pix');
-    merchantInfo += createTLV('01', normalizedKey);
-    merchantInfo += createTLV('02', generateSlug().substring(0, 25));
-    payload += createTLV('26', merchantInfo);
-    
-    // ID 52: Merchant Category Code (0000 = genérico)
-    payload += createTLV('52', '0000');
-    
-    // ID 53: Transaction Currency (986 = BRL)
-    payload += createTLV('53', '986');
-    
-    // ID 54: Transaction Amount (opcional)
-    if (pixAmount && parseFloat(pixAmount) > 0) {
-        payload += createTLV('54', parseFloat(pixAmount).toFixed(2));
-    }
-    
-    // ID 58: Country Code (BR)
-    payload += createTLV('58', 'BR');
-    
-    // ID 59: Merchant Name (máximo 25 caracteres)
-    payload += createTLV('59', normalizedName);
-    
-    // ID 60: Merchant City (máximo 15 caracteres)
-    payload += createTLV('60', normalizedCity);
-    
-    // ID 62: Additional Data Field Template
-    let additionalData = '';
-    additionalData += createTLV('05', generateSlug().substring(0, 25));
-    payload += createTLV('62', additionalData);
-    
-    // ID 63: CRC16
-    payload += '6304';
-    const crc = calculateCRC16(payload);
-    payload += crc;
-    
-    return payload;
-}
+        // FUNÇÃO COMPLETA: Gerar Payload PIX EMV válido
+        function generatePixPayload() {
+            const pixKey = document.getElementById('pix-key').value.trim();
+            const pixName = document.getElementById('pix-name').value.trim().toUpperCase();
+            const pixCity = document.getElementById('pix-city').value.trim().toUpperCase();
+            const pixAmount = document.getElementById('pix-amount').value.trim();
 
-// Cria campo TLV (Tag-Length-Value)
-function createTLV(id, value) {
-    const length = value.length.toString().padStart(2, '0');
-    return id + length + value;
-}
-
-// Remove acentos e caracteres especiais
-function removeAccents(str) {
-    return str.normalize('NFD')
-              .replace(/[\u0300-\u036f]/g, '')
-              .replace(/[^A-Z0-9 ]/g, '');
-}
-
-// Calcula CRC16-CCITT (padrão Banco Central)
-function calculateCRC16(payload) {
-    let crc = 0xFFFF;
-    const polynomial = 0x1021;
-    
-    for (let i = 0; i < payload.length; i++) {
-        crc ^= (payload.charCodeAt(i) << 8);
-        
-        for (let j = 0; j < 8; j++) {
-            if ((crc & 0x8000) !== 0) {
-                crc = (crc << 1) ^ polynomial;
-            } else {
-                crc = crc << 1;
+            if (!pixKey || !pixName || !pixCity) {
+                return '';
             }
-        }
-    }
-    
-    crc = crc & 0xFFFF;
-    return crc.toString(16).toUpperCase().padStart(4, '0');
-}
 
-        }
+            // Função auxiliar: criar campo EMV
+            function emvTag(id, value) {
+                const length = value.length.toString().padStart(2, '0');
+                return `${id}${length}${value}`;
+            }
 
             // Merchant Account Information (PIX)
             const merchantAccountInfo = emvTag('00', 'BR.GOV.BCB.PIX') + emvTag('01', pixKey);
