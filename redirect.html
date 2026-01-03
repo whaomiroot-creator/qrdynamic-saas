@@ -61,8 +61,8 @@
 
     <script>
         const supabase = window.supabase.createClient(
-            'https://ysyarhpqpslfehzcrtom.supabase.co',
-            'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlzeWFyaHBxcHNsZmVoemNydG9tIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjcyMTg2NDcsImV4cCI6MjA4Mjc5NDY0N30.A2eXYvLaOPVszW2jsAy5OzPOYt6gQF2iUp8XSjyljPM'
+            'https://kfhnnqnfuqpanmmqvfkz.supabase.co',
+            'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtmaG5ucW5mdXFwYW5tbXF2Zmt6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzU4NDE5NDksImV4cCI6MjA1MTQxNzk0OX0.VRwx1_1XxKxJRQVYme_iFjcbxA9NV-C7J26o7xVINgQ'
         );
 
         let currentLink = null;
@@ -89,9 +89,9 @@
 
                 debug('3. Buscando no banco...');
 
-                // Buscar destino
+                // ✅ CORREÇÃO 1: qrlinks → qr_links
                 const { data: link, error } = await supabase
-                    .from('qrlinks')
+                    .from('qr_links')
                     .select('destination_url, clicks, expires_at, password, click_limit')
                     .eq('slug', slug)
                     .single();
@@ -113,14 +113,12 @@
                 debug(`5. Link encontrado! Destino: ${link.destination_url}`);
                 currentLink = link;
 
-                // Verificar limite de cliques
                 if (link.click_limit && link.clicks >= link.click_limit) {
                     debug('6. Limite de cliques atingido');
                     showLimitReached(link.clicks, link.click_limit);
                     return;
                 }
 
-                // Verificar expiração
                 if (link.expires_at) {
                     const now = new Date();
                     const expiryDate = new Date(link.expires_at);
@@ -132,14 +130,12 @@
                     }
                 }
 
-                // Verificar senha
                 if (link.password) {
                     debug('6. Link protegido por senha');
                     showPasswordPrompt();
                     return;
                 }
 
-                // Redirecionar direto
                 debug('6. Redirecionando...');
                 await registerClickAndRedirect(link.destination_url);
 
@@ -154,7 +150,6 @@
             try {
                 debug('7. Registrando clique...');
                 
-                // Registrar clique
                 await supabase.from('click_logs').insert([{
                     slug: currentSlug,
                     user_agent: navigator.userAgent,
@@ -162,20 +157,18 @@
                     device: /mobile/i.test(navigator.userAgent) ? 'mobile' : 'desktop'
                 }]);
 
-                // Atualizar contador
+                // ✅ CORREÇÃO 2: qrlinks → qr_links
                 await supabase
-                    .from('qrlinks')
+                    .from('qr_links')
                     .update({ clicks: (currentLink.clicks || 0) + 1 })
                     .eq('slug', currentSlug);
 
                 debug(`8. Redirecionando para: ${destinationUrl}`);
                 
-                // Redirecionar
                 window.location.href = destinationUrl;
             } catch (error) {
                 console.error('Erro ao registrar:', error);
                 debug(`Erro ao registrar: ${error.message}`);
-                // Redirecionar mesmo com erro
                 window.location.href = destinationUrl;
             }
         }
@@ -206,6 +199,19 @@
                     </div>
                 </div>
             `;
+        }
+
+        async function checkPassword() {
+            const inputPassword = document.getElementById('password-input').value;
+            const errorMessage = document.getElementById('error-message');
+
+            if (inputPassword === currentLink.password) {
+                await registerClickAndRedirect(currentLink.destination_url);
+            } else {
+                errorMessage.classList.remove('hidden');
+                document.getElementById('password-input').value = '';
+                document.getElementById('password-input').focus();
+            }
         }
 
         function showError(title, message) {
@@ -247,7 +253,6 @@
             `;
         }
 
-        // Iniciar redirecionamento
         redirect();
     </script>
 </body>
