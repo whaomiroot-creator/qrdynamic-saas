@@ -113,9 +113,9 @@
             }
 
             try {
-                // Buscar destino
+                // CORRIGIDO: Mudei de qr_links para qrlinks
                 const { data: link, error } = await supabase
-                    .from('qr_links')
+                    .from('qrlinks')
                     .select('destination_url, clicks, expires_at, password, click_limit')
                     .eq('slug', slug)
                     .single();
@@ -127,7 +127,7 @@
 
                 currentLink = link;
 
-                // NOVO: Verificar limite de cliques PRIMEIRO
+                // Verificar limite de cliques PRIMEIRO
                 if (link.click_limit && link.clicks >= link.click_limit) {
                     showLimitReached(link.clicks, link.click_limit);
                     return;
@@ -171,7 +171,7 @@
 
                 // Atualizar contador geral
                 await supabase
-                    .from('qr_links')
+                    .from('qrlinks')
                     .update({ clicks: (currentLink.clicks || 0) + 1 })
                     .eq('slug', currentSlug);
 
@@ -285,7 +285,6 @@
             `;
         }
 
-        // NOVO: Tela de limite atingido
         function showLimitReached(clicks, limit) {
             document.body.innerHTML = `
                 <div class="message-box limit-box">
@@ -306,7 +305,6 @@
 
     <!-- PWA Service Worker Registration -->
     <script>
-    // Registrar Service Worker
     if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
             navigator.serviceWorker.register('/service-worker.js')
