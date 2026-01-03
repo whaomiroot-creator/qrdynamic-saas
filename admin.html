@@ -4,26 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Meus QR Codes - Painel</title>
-    
-    <!-- PWA Meta Tags -->
-    <meta name="theme-color" content="#3b82f6">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="QRDynamic">
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="description" content="Gerencie seus QR Codes dinâmicos">
-    
-    <!-- Manifest -->
-    <link rel="manifest" href="/manifest.json">
-    
-    <!-- iOS Icons -->
-    <link rel="apple-touch-icon" sizes="180x180" href="/icons/icon-192x192.png">
-    <link rel="apple-touch-icon" sizes="152x152" href="/icons/icon-152x152.png">
-    <link rel="apple-touch-icon" sizes="144x144" href="/icons/icon-144x144.png">
-    
-    <!-- Favicon -->
-    <link rel="icon" type="image/png" sizes="32x32" href="/icons/icon-72x72.png">
-    
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.3/dist/umd/supabase.min.js"></script>
@@ -282,7 +262,6 @@
             return '';
         }
 
-        // NOVO: Badge de limite de cliques
         function getClickLimitBadge(clicks, clickLimit) {
             if (!clickLimit) {
                 return '<span class="px-2 py-1 bg-slate-600/20 text-slate-400 rounded text-xs font-medium whitespace-nowrap">∞ Ilimitado</span>';
@@ -322,7 +301,7 @@
         async function loadLinks() {
             try {
                 const { data, error } = await supabase
-                    .from('qr_links')
+                    .from('qrlinks')
                     .select('*')
                     .eq('user_email', currentUserEmail)
                     .order('created_at', { ascending: false });
@@ -416,12 +395,12 @@
         }
 
         function copyLinkUrl(slug) {
-            const url = `${window.location.origin}/redirect.html?id=${slug}`;
+            const url = `${window.location.origin}/qrdynamic-saas/redirect.html?id=${slug}`;
             navigator.clipboard.writeText(url).then(() => alert('✅ Link copiado!'));
         }
 
         async function shareLink(slug, name, destinationUrl) {
-            const url = `${window.location.origin}/redirect.html?id=${slug}`;
+            const url = `${window.location.origin}/qrdynamic-saas/redirect.html?id=${slug}`;
             
             if (navigator.share) {
                 try {
@@ -442,7 +421,7 @@
         }
 
         function downloadQR(slug, name, qrColor, bgColor) {
-            const url = `${window.location.origin}/redirect.html?id=${slug}`;
+            const url = `${window.location.origin}/qrdynamic-saas/redirect.html?id=${slug}`;
             const tempDiv = document.createElement('div');
             tempDiv.style.position = 'absolute';
             tempDiv.style.left = '-9999px';
@@ -469,7 +448,7 @@
         }
 
         function printQR(slug, name, destinationUrl, qrColor, bgColor) {
-            const url = `${window.location.origin}/redirect.html?id=${slug}`;
+            const url = `${window.location.origin}/qrdynamic-saas/redirect.html?id=${slug}`;
             
             document.getElementById('print-qr-name').textContent = name;
             document.getElementById('print-qr-url').textContent = url;
@@ -547,7 +526,7 @@
                 const clickLimit = clickLimitInput ? parseInt(clickLimitInput) : null;
 
                 const { error } = await supabase
-                    .from('qr_links')
+                    .from('qrlinks')
                     .update({ 
                         link_name: document.getElementById('edit-name').value, 
                         destination_url: document.getElementById('edit-url').value,
@@ -573,7 +552,7 @@
 
             try {
                 const { error } = await supabase
-                    .from('qr_links')
+                    .from('qrlinks')
                     .delete()
                     .eq('slug', slug);
 
@@ -585,64 +564,6 @@
                 alert('Erro: ' + error.message);
             }
         }
-    </script>
-
-    <!-- PWA Install Script -->
-    <script>
-    // Registrar Service Worker
-    if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-            navigator.serviceWorker.register('/service-worker.js')
-                .then(registration => {
-                    console.log('✅ Service Worker registrado!', registration.scope);
-                })
-                .catch(error => {
-                    console.error('❌ Erro ao registrar Service Worker:', error);
-                });
-        });
-    }
-
-    // Popup de Instalação
-    let deferredPrompt;
-    const installButton = document.createElement('button');
-    installButton.innerHTML = '📱 Instalar App';
-    installButton.className = 'fixed bottom-4 right-4 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-full shadow-lg font-semibold transition-all z-50 hidden animate-bounce';
-    installButton.id = 'install-button';
-    document.body.appendChild(installButton);
-
-    window.addEventListener('beforeinstallprompt', (e) => {
-        e.preventDefault();
-        deferredPrompt = e;
-        
-        // Mostrar botão de instalação
-        installButton.classList.remove('hidden');
-    });
-
-    installButton.addEventListener('click', async () => {
-        if (!deferredPrompt) return;
-        
-        deferredPrompt.prompt();
-        const { outcome } = await deferredPrompt.userChoice;
-        
-        if (outcome === 'accepted') {
-            console.log('✅ App instalado!');
-        }
-        
-        deferredPrompt = null;
-        installButton.classList.add('hidden');
-    });
-
-    // Detectar se já está instalado
-    window.addEventListener('appinstalled', () => {
-        console.log('✅ QRDynamic instalado com sucesso!');
-        installButton.classList.add('hidden');
-    });
-
-    // Verificar se já está rodando como PWA
-    if (window.matchMedia('(display-mode: standalone)').matches) {
-        console.log('✅ Rodando como PWA!');
-        installButton.classList.add('hidden');
-    }
     </script>
 
 </body>
