@@ -27,7 +27,6 @@
             .no-print { display: none !important; }
         }
 
-        /* RESPONSIVO MOBILE */
         @media (max-width: 768px) {
             .qr-card {
                 padding: 1rem !important;
@@ -104,7 +103,6 @@
 
     </main>
 
-    <!-- Print Area -->
     <div id="print-qr-area" class="print-area hidden">
         <div class="bg-white p-8 text-center">
             <div id="print-qrcode-container"></div>
@@ -115,7 +113,6 @@
         </div>
     </div>
 
-    <!-- Edit Modal -->
     <div id="edit-modal" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50 no-print">
         <div class="bg-slate-800 rounded-2xl p-6 sm:p-8 max-w-md w-full border border-slate-700 max-h-[90vh] overflow-y-auto">
             <h2 class="text-xl sm:text-2xl font-bold mb-4 sm:mb-6">Editar QR Code</h2>
@@ -198,15 +195,14 @@
 
     <script>
         const supabase = window.supabase.createClient(
-            'https://ysyarhpqpslfehzcrtom.supabase.co',
-            'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlzeWFyaHBxcHNsZmVoemNydG9tIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjcyMTg2NDcsImV4cCI6MjA4Mjc5NDY0N30.A2eXYvLaOPVszW2jsAy5OzPOYt6gQF2iUp8XSjyljPM'
+            'https://kfhnnqnfuqpanmmqvfkz.supabase.co',
+            'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtmaG5ucW5mdXFwYW5tbXF2Zmt6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzU4NDE5NDksImV4cCI6MjA1MTQxNzk0OX0.VRwx1_1XxKxJRQVYme_iFjcbxA9NV-C7J26o7xVINgQ'
         );
 
         let currentUserEmail = null;
         let currentUserName = null;
         let currentEditSlug = null;
 
-        // Verificar se está logado com Supabase Auth
         supabase.auth.getSession().then(({ data: { session } }) => {
             if (!session) {
                 window.location.href = 'index.html';
@@ -262,7 +258,6 @@
             return '';
         }
 
-        // NOVO: Badge de limite de cliques
         function getClickLimitBadge(clicks, clickLimit) {
             if (!clickLimit) {
                 return '<span class="px-2 py-1 bg-slate-600/20 text-slate-400 rounded text-xs font-medium whitespace-nowrap">∞ Ilimitado</span>';
@@ -301,6 +296,7 @@
 
         async function loadLinks() {
             try {
+                // ✅ CORREÇÃO 1: qrlinks → qr_links
                 const { data, error } = await supabase
                     .from('qr_links')
                     .select('*')
@@ -526,6 +522,7 @@
                 const clickLimitInput = document.getElementById('edit-click-limit').value;
                 const clickLimit = clickLimitInput ? parseInt(clickLimitInput) : null;
 
+                // ✅ CORREÇÃO 2: qrlinks → qr_links
                 const { error } = await supabase
                     .from('qr_links')
                     .update({ 
@@ -552,6 +549,7 @@
             if (!confirm('⚠️ Tem certeza que deseja excluir este QR Code?')) return;
 
             try {
+                // ✅ CORREÇÃO 3: qrlinks → qr_links
                 const { error } = await supabase
                     .from('qr_links')
                     .delete()
