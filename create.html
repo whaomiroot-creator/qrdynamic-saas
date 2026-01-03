@@ -805,12 +805,7 @@
                     return `BEGIN:VCARD\nVERSION:3.0\nFN:${vcardName}\nTEL:${vcardPhone}\nEMAIL:${vcardEmail}\nORG:${vcardCompany}\nURL:${vcardUrl}\nEND:VCARD`;
                 
                 case 'pix':
-                    const pixKey = document.getElementById('pix-key').value;
-                    const pixName = document.getElementById('pix-name').value;
-                    const pixCity = document.getElementById('pix-city').value;
-                    const pixAmount = document.getElementById('pix-amount').value;
-                    // Formato simplificado - para PIX real precisa gerar o payload completo
-                    return `PIX:${pixKey}|${pixName}|${pixCity}|${pixAmount || '0'}`;
+                    return generatePixPayload();
                 
                 case 'location':
                     const lat = document.getElementById('location-lat').value;
@@ -820,6 +815,66 @@
                 default:
                     return '';
             }
+        }
+
+        // FUNÇÃO COMPLETA: Gerar Payload PIX EMV válido
+        function generatePixPayload() {
+            const pixKey = document.getElementById('pix-key').value.trim();
+            const pixName = document.getElementById('pix-name').value.trim().toUpperCase();
+            const pixCity = document.getElementById('pix-city').value.trim().toUpperCase();
+            const pixAmount = document.getElementById('pix-amount').value.trim();
+
+            if (!pixKey || !pixName || !pixCity) {
+                return '';
+            }
+
+            // Função auxiliar: criar campo EMV
+            function emvTag(id, value) {
+                const length = value.length.toString().padStart(2, '0');
+                return `${id}${length}${value}`;
+            }
+
+            // Merchant Account Information (PIX)
+            const merchantAccountInfo = emvTag('00', 'BR.GOV.BCB.PIX') + emvTag('01', pixKey);
+            
+            // Payload base
+            let payload = '';
+            payload += emvTag('00', '01'); // Payload Format Indicator
+            payload += emvTag('26', merchantAccountInfo); // Merchant Account Information
+            payload += emvTag('52', '0000'); // Merchant Category Code
+            payload += emvTag('53', '986'); // Transaction Currency (BRL)
+            
+            if (pixAmount && parseFloat(pixAmount) > 0) {
+                payload += emvTag('54', parseFloat(pixAmount).toFixed(2)); // Transaction Amount
+            }
+            
+            payload += emvTag('58', 'BR'); // Country Code
+            payload += emvTag('59', pixName.substring(0, 25)); // Merchant Name (max 25 chars)
+            payload += emvTag('60', pixCity.substring(0, 15)); // Merchant City (max 15 chars)
+            payload += emvTag('62', emvTag('05', generateSlug().substring(0, 25))); // Additional Data (txId)
+            payload += '6304'; // CRC placeholder
+
+            // Calcular CRC16-CCITT
+            function crc16(str) {
+                let crc = 0xFFFF;
+                for (let i = 0; i < str.length; i++) {
+                    crc ^= str.charCodeAt(i) << 8;
+                    for (let j = 0; j < 8; j++) {
+                        if (crc & 0x8000) {
+                            crc = (crc << 1) ^ 0x1021;
+                        } else {
+                            crc = crc << 1;
+                        }
+                    }
+                }
+                crc = crc & 0xFFFF;
+                return crc.toString(16).toUpperCase().padStart(4, '0');
+            }
+
+            // Adicionar CRC16 no final
+            payload += crc16(payload);
+
+            return payload;
         }
 
         // Funções de Expiração
