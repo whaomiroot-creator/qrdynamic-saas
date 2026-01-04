@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Meus QR Codes - Painel</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.3/dist/umd/supabase.min.js"></script>
     <style>
         body { background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); }
@@ -94,7 +94,7 @@
             <div id="empty-state" class="hidden text-center py-12">
                 <div class="text-5xl sm:text-6xl mb-4">📭</div>
                 <h2 class="text-xl sm:text-2xl font-bold mb-2">Nenhum QR Code ainda</h2>
-                <p class="text-sm sm:text-base text-gray-400 mb-6 px-4">Crie seu primeiro QR Code dinâmico!</p>
+                <p class="text-sm sm:text-base text-gray-400 mb-6 px-4">Crie seu primeiro QR Code!</p>
                 <a href="create.html" class="inline-block bg-blue-600 hover:bg-blue-700 px-6 py-3 rounded-lg font-semibold transition-colors text-sm sm:text-base">
                     Criar QR Code
                 </a>
@@ -228,6 +228,18 @@ const supabase = window.supabase.createClient(
             }
         }
 
+        function getTypeBadge(qrType) {
+            const types = {
+                'url': '<span class="px-2 py-1 bg-blue-600/20 text-blue-400 rounded text-xs font-medium whitespace-nowrap">🌐 URL</span>',
+                'vcard': '<span class="px-2 py-1 bg-green-600/20 text-green-400 rounded text-xs font-medium whitespace-nowrap">👤 vCard</span>',
+                'wifi': '<span class="px-2 py-1 bg-cyan-600/20 text-cyan-400 rounded text-xs font-medium whitespace-nowrap">📶 WiFi</span>',
+                'text': '<span class="px-2 py-1 bg-slate-600/20 text-slate-400 rounded text-xs font-medium whitespace-nowrap">📝 Texto</span>',
+                'email': '<span class="px-2 py-1 bg-orange-600/20 text-orange-400 rounded text-xs font-medium whitespace-nowrap">📧 Email</span>',
+                'whatsapp': '<span class="px-2 py-1 bg-emerald-600/20 text-emerald-400 rounded text-xs font-medium whitespace-nowrap">💬 WhatsApp</span>'
+            };
+            return types[qrType] || '<span class="px-2 py-1 bg-gray-600/20 text-gray-400 rounded text-xs font-medium whitespace-nowrap">📄 Outro</span>';
+        }
+
         function getExpiryBadge(expiresAt) {
             if (!expiresAt) {
                 return '<span class="px-2 py-1 bg-green-600/20 text-green-400 rounded text-xs font-medium whitespace-nowrap">✓ Permanente</span>';
@@ -296,7 +308,6 @@ const supabase = window.supabase.createClient(
 
         async function loadLinks() {
             try {
-                // ✅ CORREÇÃO 1: qrlinks → qr_links
                 const { data, error } = await supabase
                     .from('qr_links')
                     .select('*')
@@ -316,63 +327,80 @@ const supabase = window.supabase.createClient(
 
                 emptyState.classList.add('hidden');
                 container.innerHTML = data.map(link => {
-                    const expiryBadge = getExpiryBadge(link.expires_at);
-                    const passwordBadge = getPasswordBadge(link.password);
-                    const clickLimitBadge = getClickLimitBadge(link.clicks || 0, link.click_limit);
+                    const qrType = link.qr_type || 'url';
+                    const isStatic = qrType !== 'url';
+                    const typeBadge = getTypeBadge(qrType);
+                    const expiryBadge = !isStatic ? getExpiryBadge(link.expires_at) : '';
+                    const passwordBadge = !isStatic ? getPasswordBadge(link.password) : '';
+                    const clickLimitBadge = !isStatic ? getClickLimitBadge(link.clicks || 0, link.click_limit) : '';
                     const expiryText = link.expires_at ? `⏰ Expira: ${formatExpiry(link.expires_at)}` : '';
                     
+                    // Botões diferentes para estático vs dinâmico
+                    const dynamicButtons = !isStatic ? `
+                        <button 
+                            onclick="copyLinkUrl('${link.slug}')" 
+                            class="bg-blue-600 hover:bg-blue-700 px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors flex items-center justify-center gap-1"
+                            title="Copiar link"
+                        >
+                            📋 Copiar
+                        </button>
+                        <button 
+                            onclick="shareLink('${link.slug}', '${link.link_name.replace(/'/g, "\\'")}', '${link.destination_url}')" 
+                            class="bg-cyan-600 hover:bg-cyan-700 px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors flex items-center justify-center gap-1"
+                            title="Compartilhar"
+                        >
+                            📤 Share
+                        </button>
+                        <button 
+                            onclick="openEditModal('${link.slug}', \`${link.link_name}\`, \`${link.destination_url}\`, '${link.expires_at || ''}', ${link.click_limit || 'null'})" 
+                            class="bg-yellow-600 hover:bg-yellow-700 px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors flex items-center justify-center gap-1"
+                            title="Editar"
+                        >
+                            ✏️ Editar
+                        </button>
+                    ` : `
+                        <button 
+                            onclick="viewStaticContent('${link.slug}')" 
+                            class="bg-cyan-600 hover:bg-cyan-700 px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors flex items-center justify-center gap-1"
+                            title="Ver conteúdo"
+                        >
+                            👁️ Ver
+                        </button>
+                    `;
+                    
                     return `
-                    <div class="bg-slate-800/50 rounded-xl p-4 sm:p-6 border border-slate-700 hover:border-slate-600 transition-colors qr-card">
+                    <div class="bg-slate-800/50 rounded-xl p-4 sm:p-6 border border-slate-700 hover:border-slate-600 transition-colors qr-card ${isStatic ? 'border-l-4 border-l-green-500' : ''}">
                         <div class="flex flex-col gap-3 sm:gap-4">
                             <div class="flex-1">
                                 <div class="flex items-center gap-2 sm:gap-3 mb-2 flex-wrap">
                                     <h3 class="text-lg sm:text-xl font-bold break-words">${link.link_name}</h3>
+                                    ${typeBadge}
                                     ${expiryBadge}
                                     ${clickLimitBadge}
                                     ${passwordBadge}
                                 </div>
-                                <p class="text-xs sm:text-sm text-gray-400 mb-2 break-all">${link.destination_url}</p>
+                                <p class="text-xs sm:text-sm text-gray-400 mb-2 break-all">${isStatic ? '🔒 Conteúdo estático (não editável)' : link.destination_url}</p>
                                 <div class="flex flex-wrap gap-3 sm:gap-4 text-xs sm:text-sm text-gray-500">
-                                    <span>👁️ ${link.clicks || 0} cliques</span>
+                                    ${!isStatic ? `<span>👁️ ${link.clicks || 0} cliques</span>` : '<span>📦 QR Code Estático</span>'}
                                     <span>📅 ${new Date(link.created_at).toLocaleDateString('pt-BR')}</span>
                                     ${expiryText ? `<span class="hidden sm:inline">${expiryText}</span>` : ''}
                                 </div>
                             </div>
                             <div class="flex flex-wrap gap-2">
+                                ${dynamicButtons}
                                 <button 
-                                    onclick="copyLinkUrl('${link.slug}')" 
-                                    class="bg-blue-600 hover:bg-blue-700 px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors flex items-center justify-center gap-1"
-                                    title="Copiar link"
-                                >
-                                    📋 Copiar
-                                </button>
-                                <button 
-                                    onclick="shareLink('${link.slug}', '${link.link_name.replace(/'/g, "\\'")}', '${link.destination_url}')" 
-                                    class="bg-cyan-600 hover:bg-cyan-700 px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors flex items-center justify-center gap-1"
-                                    title="Compartilhar"
-                                >
-                                    📤 Share
-                                </button>
-                                <button 
-                                    onclick="downloadQR('${link.slug}', '${link.link_name.replace(/'/g, "\\'")}', '${link.qr_color || '#000000'}', '${link.bg_color || '#ffffff'}')" 
+                                    onclick="downloadQRFromDB('${link.qr_image}', '${link.link_name.replace(/'/g, "\\'")}', '${link.qr_color || '#000000'}', '${link.bg_color || '#ffffff'}')" 
                                     class="bg-green-600 hover:bg-green-700 px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors flex items-center justify-center gap-1"
                                     title="Baixar QR"
                                 >
                                     💾 Baixar
                                 </button>
                                 <button 
-                                    onclick="printQR('${link.slug}', '${link.link_name.replace(/'/g, "\\'")}', '${link.destination_url}', '${link.qr_color || '#000000'}', '${link.bg_color || '#ffffff'}')" 
+                                    onclick="printQRFromDB('${link.qr_image}', '${link.link_name.replace(/'/g, "\\'")}')" 
                                     class="bg-purple-600 hover:bg-purple-700 px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors flex items-center justify-center gap-1"
                                     title="Imprimir"
                                 >
                                     🖨️ Print
-                                </button>
-                                <button 
-                                    onclick="openEditModal('${link.slug}', \`${link.link_name}\`, \`${link.destination_url}\`, '${link.expires_at || ''}', ${link.click_limit || 'null'})" 
-                                    class="bg-yellow-600 hover:bg-yellow-700 px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors flex items-center justify-center gap-1"
-                                    title="Editar"
-                                >
-                                    ✏️ Editar
                                 </button>
                                 <button 
                                     onclick="deleteLink('${link.slug}')" 
@@ -417,56 +445,41 @@ const supabase = window.supabase.createClient(
             }
         }
 
-        function downloadQR(slug, name, qrColor, bgColor) {
-            const url = `${window.location.origin}/redirect.html?id=${slug}`;
-            const tempDiv = document.createElement('div');
-            tempDiv.style.position = 'absolute';
-            tempDiv.style.left = '-9999px';
-            document.body.appendChild(tempDiv);
-
-            new QRCode(tempDiv, {
-                text: url,
-                width: 512,
-                height: 512,
-                colorDark: qrColor,
-                colorLight: bgColor,
-                correctLevel: QRCode.CorrectLevel.H
-            });
-
-            setTimeout(() => {
-                const canvas = tempDiv.querySelector('canvas');
-                const image = canvas.toDataURL('image/png');
-                const link = document.createElement('a');
-                link.download = `qrcode-${name.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.png`;
-                link.href = image;
-                link.click();
-                document.body.removeChild(tempDiv);
-            }, 100);
+        function downloadQRFromDB(imageData, name) {
+            const link = document.createElement('a');
+            link.download = `qrcode-${name.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.png`;
+            link.href = imageData;
+            link.click();
         }
 
-        function printQR(slug, name, destinationUrl, qrColor, bgColor) {
-            const url = `${window.location.origin}/redirect.html?id=${slug}`;
-            
+        function printQRFromDB(imageData, name) {
             document.getElementById('print-qr-name').textContent = name;
-            document.getElementById('print-qr-url').textContent = url;
+            document.getElementById('print-qr-url').textContent = 'QR Code';
             
             const printContainer = document.getElementById('print-qrcode-container');
-            printContainer.innerHTML = '';
-            
-            new QRCode(printContainer, {
-                text: url,
-                width: 256,
-                height: 256,
-                colorDark: qrColor,
-                colorLight: bgColor,
-                correctLevel: QRCode.CorrectLevel.H
-            });
+            printContainer.innerHTML = `<img src="${imageData}" style="width: 256px; height: 256px;">`;
 
             setTimeout(() => {
                 document.getElementById('print-qr-area').classList.remove('hidden');
                 window.print();
                 document.getElementById('print-qr-area').classList.add('hidden');
             }, 100);
+        }
+
+        async function viewStaticContent(slug) {
+            try {
+                const { data, error } = await supabase
+                    .from('qr_links')
+                    .select('destination_url, qr_type')
+                    .eq('slug', slug)
+                    .single();
+
+                if (error) throw error;
+
+                alert(`📦 Conteúdo do QR Code:\n\nTipo: ${data.qr_type}\n\n${data.destination_url}`);
+            } catch (error) {
+                alert('Erro: ' + error.message);
+            }
         }
 
         function formatDateTimeLocal(date) {
@@ -522,7 +535,6 @@ const supabase = window.supabase.createClient(
                 const clickLimitInput = document.getElementById('edit-click-limit').value;
                 const clickLimit = clickLimitInput ? parseInt(clickLimitInput) : null;
 
-                // ✅ CORREÇÃO 2: qrlinks → qr_links
                 const { error } = await supabase
                     .from('qr_links')
                     .update({ 
@@ -549,7 +561,6 @@ const supabase = window.supabase.createClient(
             if (!confirm('⚠️ Tem certeza que deseja excluir este QR Code?')) return;
 
             try {
-                // ✅ CORREÇÃO 3: qrlinks → qr_links
                 const { error } = await supabase
                     .from('qr_links')
                     .delete()
@@ -567,4 +578,3 @@ const supabase = window.supabase.createClient(
 
 </body>
 </html>
-
