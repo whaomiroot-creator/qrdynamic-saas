@@ -37,27 +37,12 @@
             border-radius: 1rem;
             text-align: center;
         }
-        .error-box {
-            background: rgba(239, 68, 68, 0.1);
-            border: 1px solid rgba(239, 68, 68, 0.3);
-        }
-        .debug-box {
-            background: rgba(251, 146, 60, 0.1);
-            border: 1px solid rgba(251, 146, 60, 0.3);
-            margin-top: 20px;
-            padding: 15px;
-            text-align: left;
-            font-size: 12px;
-            font-family: monospace;
-            white-space: pre-wrap;
-        }
     </style>
 </head>
 <body>
     <div class="loader">
         <div class="spinner"></div>
         <p>Redirecionando...</p>
-        <p id="debug-info" class="text-xs text-gray-500 mt-4"></p>
     </div>
 
     <script>
@@ -69,72 +54,33 @@
         let currentLink = null;
         let currentSlug = null;
 
-        function debug(message) {
-            console.log('DEBUG:', message);
-            const debugEl = document.getElementById('debug-info');
-            if (debugEl) {
-                debugEl.textContent += message + '\n';
-            }
-        }
-
         async function redirect() {
             try {
                 const urlParams = new URLSearchParams(window.location.search);
                 const slug = urlParams.get('id');
                 currentSlug = slug;
 
-                debug(`1. URL atual: ${window.location.href}`);
-                debug(`2. Slug extraído: ${slug}`);
-
                 if (!slug) {
-                    showError('Link inválido', 'Este QR Code não existe ou foi removido. (Sem ID na URL)');
+                    showError('Link inválido', 'Este QR Code não possui um identificador válido.');
                     return;
                 }
 
-                debug('3. Buscando no banco...');
-
+                // Buscar link no banco
                 const { data: link, error } = await supabase
                     .from('qr_links')
-                    .select('destination_url, clicks, expires_at, password, click_limit')
+                    .select('*')
                     .eq('slug', slug)
                     .single();
 
-                debug(`4. Resposta do banco: ${error ? 'ERRO' : 'SUCESSO'}`);
-
-                if (error) {
-                    debug(`5. Erro do Supabase: ${error.message}`);
-                    showError('Erro no banco de dados', `Detalhes: ${error.message}`);
+                if (error || !link) {
+                    showError('QR Code não encontrado', 'Este QR Code não existe ou foi deletado.');
                     return;
                 }
 
-                if (!link) {
-                    debug('5. Link não encontrado no banco');
-                    showError('Link não encontrado', 'Este QR Code não existe na base de dados.');
-                    return;
-                }
-
-                debug(`5. Link encontrado! Destino: ${link.destination_url}`);
                 currentLink = link;
-
-                // ✅ VERIFICAR SE É QR CODE ESTÁTICO
-                const url = link.destination_url;
-                const isStatic = url.startsWith('BEGIN:VCARD') || 
-                                 url.startsWith('WIFI:') || 
-                                 url.startsWith('geo:') || 
-                                 url.startsWith('tel:') || 
-                                 url.startsWith('sms:') || 
-                                 url.startsWith('mailto:') ||
-                                 url.startsWith('000201'); // PIX
-
-                if (isStatic) {
-                    debug('6. QR Code Estático detectado');
-                    showStaticQRInfo();
-                    return;
-                }
 
                 // Verificar limite de cliques
                 if (link.click_limit && link.clicks >= link.click_limit) {
-                    debug('6. Limite de cliques atingido');
                     showLimitReached(link.clicks, link.click_limit);
                     return;
                 }
@@ -145,7 +91,6 @@
                     const expiryDate = new Date(link.expires_at);
                     
                     if (now > expiryDate) {
-                        debug('6. Link expirado');
                         showExpired(expiryDate);
                         return;
                     }
@@ -153,25 +98,21 @@
 
                 // Verificar senha
                 if (link.password) {
-                    debug('6. Link protegido por senha');
                     showPasswordPrompt();
                     return;
                 }
 
-                debug('6. Redirecionando...');
+                // Registrar clique e redirecionar
                 await registerClickAndRedirect(link.destination_url);
 
             } catch (error) {
-                console.error('Erro completo:', error);
-                debug(`ERRO FATAL: ${error.message}`);
-                showError('Erro ao redirecionar', error.message);
+                console.error('Erro:', error);
+                showError('Erro ao redirecionar', 'Ocorreu um erro inesperado. Tente novamente.');
             }
         }
 
         async function registerClickAndRedirect(destinationUrl) {
             try {
-                debug('7. Registrando clique...');
-                
                 // Registrar clique no log
                 await supabase.from('click_logs').insert([{
                     slug: currentSlug,
@@ -181,38 +122,15 @@
                 }]);
 
                 // Incrementar contador
-                await supabase
-                    .from('qr_links')
-                    .update({ clicks: (currentLink.clicks || 0) + 1 })
-                    .eq('slug', currentSlug);
+                await supabase.rpc('increment_clicks', { slug_param: currentSlug });
 
-                debug(`8. Redirecionando para: ${destinationUrl}`);
-                
+                // Redirecionar
                 window.location.href = destinationUrl;
             } catch (error) {
                 console.error('Erro ao registrar:', error);
-                debug(`Erro ao registrar: ${error.message}`);
                 // Redirecionar mesmo se falhar o registro
                 window.location.href = destinationUrl;
             }
-        }
-
-        function showStaticQRInfo() {
-            document.body.innerHTML = `
-                <div class="message-box" style="background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.3);">
-                    <div class="text-6xl mb-4">📱</div>
-                    <h1 class="text-2xl font-bold mb-2">QR Code Estático</h1>
-                    <p class="text-gray-300 mb-4">Este QR Code contém dados que devem ser lidos diretamente pelo app de câmera do seu celular.</p>
-                    <div class="bg-blue-900/30 border border-blue-600/50 rounded-lg p-4 mb-4">
-                        <p class="text-blue-300 text-sm">
-                            ⚠️ <strong>Não use um leitor de QR Code via navegador!</strong>
-                        </p>
-                    </div>
-                    <p class="text-sm text-gray-400">
-                        Aponte a câmera do seu celular para o QR Code e ele abrirá automaticamente os dados (contato, WiFi, localização, etc).
-                    </p>
-                </div>
-            `;
         }
 
         function showPasswordPrompt() {
@@ -222,7 +140,7 @@
                     <h1 class="text-2xl font-bold mb-2">QR Code Protegido</h1>
                     <p class="text-gray-300 mb-6">Este link requer senha para acesso</p>
                     
-                    <div id="password-form" class="space-y-4">
+                    <div class="space-y-4">
                         <input 
                             type="password" 
                             id="password-input" 
@@ -231,7 +149,7 @@
                             onkeypress="if(event.key === 'Enter') checkPassword()"
                             autofocus
                         >
-                        <p id="error-message" class="text-red-400 text-sm hidden">❌ Senha incorreta</p>
+                        <p id="error-message" class="text-red-400 text-sm" style="display:none;">❌ Senha incorreta</p>
                         <button 
                             onclick="checkPassword()"
                             class="w-full bg-purple-600 hover:bg-purple-700 py-3 rounded-lg font-semibold transition-all"
@@ -250,23 +168,21 @@
             if (inputPassword === currentLink.password) {
                 await registerClickAndRedirect(currentLink.destination_url);
             } else {
-                errorMessage.classList.remove('hidden');
+                errorMessage.style.display = 'block';
                 document.getElementById('password-input').value = '';
                 document.getElementById('password-input').focus();
             }
         }
 
         function showError(title, message) {
-            const debugInfo = document.getElementById('debug-info')?.textContent || 'Nenhuma informação de debug';
             document.body.innerHTML = `
-                <div class="message-box error-box">
+                <div class="message-box" style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3);">
                     <div class="text-6xl mb-4">❌</div>
                     <h1 class="text-2xl font-bold mb-2">${title}</h1>
-                    <p class="text-gray-300">${message}</p>
-                    <div class="debug-box">
-                        <strong>Debug Info:</strong><br>
-                        ${debugInfo}
-                    </div>
+                    <p class="text-gray-300 mb-6">${message}</p>
+                    <a href="https://www.qrdynamic.com.br" class="inline-block bg-blue-600 hover:bg-blue-700 px-6 py-3 rounded-lg font-semibold transition-all text-white no-underline">
+                        Criar meu QR Code
+                    </a>
                 </div>
             `;
         }
@@ -278,7 +194,10 @@
                     <div class="text-6xl mb-4">⏰</div>
                     <h1 class="text-2xl font-bold mb-2">QR Code Expirado</h1>
                     <p class="text-gray-300 mb-4">Este link expirou em:</p>
-                    <p class="text-xl font-semibold text-orange-400">${formatted}</p>
+                    <p class="text-xl font-semibold text-orange-400 mb-6">${formatted}</p>
+                    <a href="https://www.qrdynamic.com.br" class="inline-block bg-orange-600 hover:bg-orange-700 px-6 py-3 rounded-lg font-semibold transition-all text-white no-underline">
+                        Criar novo QR Code
+                    </a>
                 </div>
             `;
         }
@@ -289,9 +208,12 @@
                     <div class="text-6xl mb-4">🚫</div>
                     <h1 class="text-2xl font-bold mb-2">Limite de Acessos Atingido</h1>
                     <p class="text-gray-300 mb-4">Este QR Code já recebeu o máximo de acessos permitidos.</p>
-                    <div class="bg-cyan-900/30 border border-cyan-600/50 rounded-lg p-4">
+                    <div class="bg-cyan-900/30 border border-cyan-600/50 rounded-lg p-4 mb-6">
                         <p class="text-cyan-400 font-bold text-3xl">${clicks} / ${limit}</p>
                     </div>
+                    <a href="https://www.qrdynamic.com.br" class="inline-block bg-cyan-600 hover:bg-cyan-700 px-6 py-3 rounded-lg font-semibold transition-all text-white no-underline">
+                        Criar novo QR Code
+                    </a>
                 </div>
             `;
         }
